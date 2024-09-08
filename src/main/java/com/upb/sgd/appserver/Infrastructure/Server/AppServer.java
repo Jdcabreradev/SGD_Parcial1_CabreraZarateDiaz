@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import com.upb.sgd.appserver.Application.UseCase.UserUseCase;
+import com.upb.sgd.appserver.Infrastructure.Provider.MariaDBProvider;
 import com.upb.sgd.appserver.Infrastructure.RMI.UserRouterRMI;
 import com.upb.sgd.shared.infrastructure.rmi.clientapp.ClientAppUsersRMI;
 
@@ -22,8 +23,10 @@ public class AppServer {
 
     private Connection connection;
 
-    String url = "jdbc:mariadb://localhost:3306/UpbNewsDb?useSSL=false&serverTimezone=UTC";
-    String dbUser = "upbnews";
+    public ClientAppUsersRMI usersRMI;
+
+    String url = "jdbc:mariadb://localhost:3306/SGDUSERDB?useSSL=false&serverTimezone=UTC";
+    String dbUser = "APPSERVERUSER";
     String dbPassword = "123";
     
 
@@ -50,14 +53,16 @@ public class AppServer {
             
             //User endpoint setup
             System.out.println("Initializing user service.");
-            ClientAppUsersRMI usersRMI = new UserRouterRMI(
-                new UserUseCase()
+            usersRMI = new UserRouterRMI(
+                new UserUseCase(
+                    new MariaDBProvider(connection)
+                )
             );
             Naming.rebind(uri + "/user", usersRMI);
             System.out.println("User service initialized on: " + uri + "/user");
 
             //FileSystem endpoint
-            
+
             System.out.println("Appserver ready.");
             return true;    
         } catch (IOException e) {
