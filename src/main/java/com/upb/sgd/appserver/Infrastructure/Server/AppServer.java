@@ -29,7 +29,6 @@ public class AppServer {
     String dbUser = "APPSERVERUSER";
     String dbPassword = "123";
     
-
     public AppServer(String ip, String port, String serviceName){
         this.ip = ip;
         this.port = port;
@@ -62,6 +61,10 @@ public class AppServer {
             System.out.println("User service initialized on: " + uri + "/user");
 
             //FileSystem endpoint
+
+            //Notification Socket Process
+            System.out.println("Initializing notification socket module.");
+
 
             System.out.println("Appserver ready.");
             return true;    
