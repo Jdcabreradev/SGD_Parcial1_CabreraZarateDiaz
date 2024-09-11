@@ -4,6 +4,6 @@ public class Document extends Directory{
 
     public Document(){
         super();
-        this.type = 0;
+        this.dirType = DirType.FILE;
     }
 }

@@ -8,7 +8,7 @@ public class Folder extends Directory{
 
     public Folder(){
         super();
-        this.type = 1;
+        this.dirType = DirType.FOLDER;
         this.children = new ArrayList<>();
     }
 
@@ -18,7 +18,7 @@ public class Folder extends Directory{
             return this;
         }
         for (Directory child : this.children) {
-            if (child.type == 1) {
+            if (child.dirType == DirType.FOLDER) {
                 Directory found = ((Folder) child).findById(id);
                 if (found != null) {
                     return found;
@@ -40,7 +40,7 @@ public class Folder extends Directory{
             } else {
                 // Buscar el directorio padre por su ID
                 Directory parentDir = findById(dir.parent);
-                if (parentDir != null && parentDir.type == 1) {
+                if (parentDir != null && parentDir.dirType == DirType.FOLDER) {
                     Folder parentFolder = (Folder) parentDir;
                     parentFolder.children.add(dir);  // Añadimos el directorio a los hijos del padre
                     dir.parentDirectory = parentFolder;  // Establecemos el padre del nuevo directorio
