@@ -45,7 +45,7 @@ public class UserUseCase implements UserUseCasePort{
     }
 
     @Override
-    public Boolean UpdateUser(int id, int groupPermId, String username, String password) {
+    public Boolean UpdateUser(int id, List<Integer> groupPermId, String username, String password) {
         return this.userDBProvider.UpdateUser(id, groupPermId, username, password);
     }
 
