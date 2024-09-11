@@ -25,7 +25,7 @@ public class AppServer {
 
     public ClientAppUsersRMI usersRMI;
 
-    String url = "jdbc:mariadb://localhost:3306/SGDUSERDB?useSSL=false&serverTimezone=UTC";
+    String url = "jdbc:mariadb://localhost:3306/SGDUSERDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
     String dbUser = "APPSERVERUSER";
     String dbPassword = "123";
     
