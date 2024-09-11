@@ -13,6 +13,7 @@ CREATE TABLE `GROUP` (
 CREATE TABLE USER (
     Id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255) NOT NULL,
+    isAdmin BOOLEAN DEFAULT FALSE,
     `password` VARCHAR(255) NOT NULL
 );
 
@@ -25,7 +26,11 @@ CREATE TABLE USERGROUP(
 );
 
 INSERT INTO `GROUP` (`Name`) VALUES ('test');
-INSERT INTO USER (username, `password`) 
-VALUES ('utest', '123');
+INSERT INTO USER (username, `password`, isAdmin) 
+VALUES ('utest', '123',true);
+
+INSERT INTO USER (username, `password`, isAdmin) 
+VALUES ('noadmin', '123',false);
+
 INSERT INTO USERGROUP (UserId,GroupId) VALUES 
 (1,1);
