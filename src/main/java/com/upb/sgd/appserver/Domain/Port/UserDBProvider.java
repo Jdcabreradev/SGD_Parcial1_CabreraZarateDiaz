@@ -20,7 +20,7 @@ public interface UserDBProvider {
     public User Login(String username, String password);
     public Boolean CreateUser(int groupPermId, String username, String password);
     public Boolean DeleteUser(int id);
-    public Boolean UpdateUser(int id, int groupPermId, String username, String password);
+    public Boolean UpdateUser(int id, List<Integer> groupPermId, String username, String password);
     
     public Group GetGroup(int id);
     public List<Group> GetGroups();
