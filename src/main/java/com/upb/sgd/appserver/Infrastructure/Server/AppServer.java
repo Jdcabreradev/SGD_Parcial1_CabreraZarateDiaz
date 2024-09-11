@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import com.upb.sgd.appserver.Application.UseCase.UserUseCase;
 import com.upb.sgd.appserver.Infrastructure.Provider.MariaDBProvider;
 import com.upb.sgd.appserver.Infrastructure.RMI.UserRouterRMI;
+import com.upb.sgd.appserver.Infrastructure.Socket.ServerProcess;
+import com.upb.sgd.appserver.Infrastructure.Socket.ServerSocket;
 import com.upb.sgd.shared.infrastructure.rmi.clientapp.ClientAppUsersRMI;
 
 /**
@@ -24,6 +26,7 @@ public class AppServer {
     private Connection connection;
 
     public ClientAppUsersRMI usersRMI;
+    public ServerProcess serverProcess;
 
     String url = "jdbc:mariadb://localhost:3306/SGDUSERDB?useSSL=false&serverTimezone=UTC";
     String dbUser = "APPSERVERUSER";
@@ -64,7 +67,10 @@ public class AppServer {
 
             //Notification Socket Process
             System.out.println("Initializing notification socket module.");
-
+            this.serverProcess = new ServerProcess(
+                new ServerSocket(1803, 100)
+            );
+            serverProcess.Init();
 
             System.out.println("Appserver ready.");
             return true;    
