@@ -35,8 +35,8 @@ public class UserUseCase implements UserUseCasePort{
     }
 
     @Override
-    public Boolean CreateUser(int groupPermId, String username, String password) {
-        return this.userDBProvider.CreateUser(groupPermId, username, password);
+    public Boolean CreateUser(int groupPermId, String username, String password, boolean isAdmin) {
+        return this.userDBProvider.CreateUser(groupPermId, username, password, isAdmin);
     }
 
     @Override

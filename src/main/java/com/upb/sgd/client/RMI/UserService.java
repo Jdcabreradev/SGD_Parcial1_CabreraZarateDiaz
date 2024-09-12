@@ -49,8 +49,8 @@
          return usersRMI.Login(username, password);
      }
  
-     public Boolean CreateUser(int groupPermId, String username, String password) throws RemoteException {
-         return usersRMI.CreateUser(groupPermId, username, password);
+     public Boolean CreateUser(int groupPermId, String username, String password, boolean isAdmin) throws RemoteException {
+         return usersRMI.CreateUser(groupPermId, username, password, isAdmin);
      }
  
      public Boolean UpdateUser(int id, List<Integer> groupPermId, String username, String password) throws RemoteException {

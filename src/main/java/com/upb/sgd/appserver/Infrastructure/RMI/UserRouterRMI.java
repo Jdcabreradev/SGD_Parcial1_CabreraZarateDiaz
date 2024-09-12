@@ -39,8 +39,8 @@ public class UserRouterRMI extends UnicastRemoteObject implements ClientAppUsers
     }
 
     @Override
-    public Boolean CreateUser(int groupPermId, String username, String password) throws RemoteException {
-        return userUseCase.CreateUser(groupPermId, username, password);
+    public Boolean CreateUser(int groupPermId, String username, String password, boolean isAdmin) throws RemoteException {
+        return userUseCase.CreateUser(groupPermId, username, password, isAdmin);
     }
 
     @Override
