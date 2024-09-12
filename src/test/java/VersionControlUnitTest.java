@@ -28,10 +28,13 @@ public class VersionControlUnitTest {
     @Test
     public void testRoot(){
         Assertions.assertEquals(rootFolder.name,"root");
-        Folder nestedDoc = (Folder) rootFolder.children.get(0);
-        Folder nested2 =  (Folder) nestedDoc.children.get(0);
-        System.out.println(nested2.children.getFirst().name);
-        System.out.println(nested2.children.getFirst().dirType);
+        Document document = (Document) rootFolder.children.get(5);
+        System.out.println(document.name);
+        System.out.println(document.dirType);
+        System.out.println(document.tags.size());
+        System.out.println(document.owner);
+        System.out.println(document.group);
+        System.out.println(document.permissions);
     }
 
 //    @Test

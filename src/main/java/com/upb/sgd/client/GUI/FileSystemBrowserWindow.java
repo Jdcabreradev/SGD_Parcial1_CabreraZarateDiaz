@@ -241,6 +241,11 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                 // Logic
                 File tempFile = new File(filePath);
                 Document uploadDoc = new Document();
+                try {
+                    uploadDoc.size = FileUtils.getFileSizeInMB(Paths.get(filePath));
+                } catch (IOException ex) {
+                    uploadDoc.size = "UNDEFINED";
+                }
                 uploadDoc.name = tempFile.getName();
                 uploadDoc.owner = this.mediator.loggedUser.Id;
                 uploadDoc.group = this.mediator.loggedUser.groupPermIds.getFirst();

@@ -29,12 +29,14 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
         rootFolder.name = "root";
 
         for (Directory dir : rootChildren) {
+
             if (dir.dirType.isFolder()) {
                 Folder childFolder = createFolderRecursively(dir);
+                copyDirectoryPropertiesToFolder(dir, childFolder);  // Copiar todas las propiedades
                 rootFolder.AddDirectory(childFolder);
             } else {
                 Document document = new Document();
-                document.name = dir.name;
+                copyDirectoryPropertiesToDocument(dir, document);  // Copiar todas las propiedades
                 rootFolder.AddDirectory(document);
             }
         }
@@ -43,20 +45,42 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
 
     private Folder createFolderRecursively(Directory dir) {
         Folder folder = new Folder();
-        folder.name = dir.name;
+        copyDirectoryPropertiesToFolder(dir, folder);
+
         List<Directory> children = databaseService.findDirByParent(dir.id);
 
         for (Directory childDir : children) {
-            if (childDir.dirType.isFolder()) {  // Cambié dir.dirType por childDir.dirType
+            if (childDir.dirType.isFolder()) {
                 Folder childFolder = createFolderRecursively(childDir);
+                copyDirectoryPropertiesToFolder(childDir, childFolder);
                 folder.AddDirectory(childFolder);
             } else {
                 Document document = new Document();
-                document.name = childDir.name;
+                copyDirectoryPropertiesToDocument(childDir, document);
                 folder.AddDirectory(document);
             }
         }
         return folder;
+    }
+
+    private void copyDirectoryPropertiesToFolder(Directory dir, Folder folder) {
+        folder.name = dir.name;
+        folder.owner = dir.owner;
+        folder.permissions = dir.permissions;
+        folder.size = dir.size;
+        folder.contentType = dir.contentType;
+        folder.path = dir.path;
+        folder.tags = dir.tags;
+    }
+
+    private void copyDirectoryPropertiesToDocument(Directory dir, Document document) {
+        document.name = dir.name;
+        document.owner = dir.owner;
+        document.permissions = dir.permissions;
+        document.size = dir.size;
+        document.contentType = dir.contentType;
+        document.path = dir.path;
+        document.tags = dir.tags;
     }
 
     @Override
