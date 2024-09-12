@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -210,17 +211,6 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
             if (returnValue == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 selectedFilePath.setText(selectedFile.getAbsolutePath());
-                Document uploadDoc = new Document();
-                uploadDoc.name = selectedFile.getName();
-                uploadDoc.path = selectedFile.getName();
-                uploadDoc.permissions = "";
-                uploadDoc.contentType = selectedFile.getName().substring(selectedFile.getName().lastIndexOf('.'));
-                try {
-                    uploadDoc.fileData = FileUtils.readFileToByteArray(Paths.get(selectedFile.getAbsolutePath()));
-                } catch (IOException ex) {
-                    System.out.println("unable to find uploadFile path");
-                }
-                this.mediator.dataService.UploadFile(uploadDoc,this.mediator.dataService.currentFolder.getPath().toString());
             }
         });
 
@@ -249,6 +239,19 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
 
             if (!filePath.isEmpty()) {
                 // Logic
+                File tempFile = new File(filePath);
+                Document uploadDoc = new Document();
+                uploadDoc.name = tempFile.getName();
+                uploadDoc.path = tempFile.getName();
+                uploadDoc.tags = Arrays.asList(tags.split(","));
+                uploadDoc.permissions = permissions;
+                uploadDoc.contentType = tempFile.getName().substring(tempFile.getName().lastIndexOf('.'));
+                try {
+                    uploadDoc.fileData = FileUtils.readFileToByteArray(Paths.get(tempFile.getAbsolutePath()));
+                } catch (IOException ex) {
+                    System.out.println("unable to find uploadFile path");
+                }
+                this.mediator.dataService.UploadFile(uploadDoc,this.mediator.dataService.currentFolder.getPath().toString());
                 System.out.println("Uploading document: " + documentName + " | Permissions: " + permissions + " | Tags: " + tags + " | File: " + filePath);
                 uploadDialog.dispose();
             } else {
