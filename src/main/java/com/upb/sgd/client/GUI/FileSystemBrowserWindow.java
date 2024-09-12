@@ -103,8 +103,9 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         folderTree.addTreeSelectionListener(e -> {
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) folderTree.getLastSelectedPathComponent();
             if (selectedNode != null) {
-                Folder selectedFolder = (Folder) selectedNode.getUserObject();
-                UpdateDocumentList(selectedFolder);
+                this.mediator.dataService.currentFolder = (Folder) selectedNode.getUserObject();
+                UpdateDocumentList(this.mediator.dataService.currentFolder);
+                System.out.println(this.mediator.dataService.currentFolder.name);
             }
         });
         JScrollPane leftScrollPane = new JScrollPane(folderTree);
@@ -187,7 +188,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         viewFrame.setVisible(true);
 
         // Load file system data into the view
-        this.mediator.dataService.loadFileSystemExample();
+        this.mediator.dataService.GetRoot();
         this.UpdateFolderTree(this.mediator.dataService.rootFolder);
         this.UpdateDocumentList(this.mediator.dataService.rootFolder);
     }
