@@ -34,7 +34,39 @@ public class UserRouterRMI extends UnicastRemoteObject implements ClientAppUsers
     }
 
     @Override
+    public User GetUser(int id) throws RemoteException {
+        return userUseCase.GetUser(id);
+    }
+
+    @Override
+    public Boolean CreateUser(int groupPermId, String username, String password) throws RemoteException {
+        return userUseCase.CreateUser(groupPermId, username, password);
+    }
+
+    @Override
+    public Boolean UpdateUser(int id, List<Integer> groupPermId, String username, String password) {
+        return userUseCase.UpdateUser(id, groupPermId, username, password);
+    }
+
+    //Group Related
+
+    @Override
+    public Group GetGroup(int id) throws RemoteException {
+        return this.userUseCase.GetGroup(id);
+    }
+
+    @Override
     public List<Group> GetGroups() {
         return userUseCase.GetGroups();
+    }
+
+    @Override
+    public Boolean CreateGroup(String name) throws RemoteException {
+        return userUseCase.CreateGroup(name);
+    }
+
+    @Override
+    public Boolean UpdateGroup(int id, String name) throws RemoteException {
+        return userUseCase.UpdateGroup(id, name);
     }
 }

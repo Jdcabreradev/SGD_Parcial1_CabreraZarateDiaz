@@ -7,9 +7,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import com.upb.sgd.appserver.Application.Service.AppDataService;
 import com.upb.sgd.appserver.Application.UseCase.UserUseCase;
 import com.upb.sgd.appserver.Infrastructure.Provider.MariaDBProvider;
 import com.upb.sgd.appserver.Infrastructure.RMI.UserRouterRMI;
+import com.upb.sgd.appserver.Infrastructure.Socket.ServerProcess;
+import com.upb.sgd.appserver.Infrastructure.Socket.ServerSocket;
 import com.upb.sgd.shared.infrastructure.rmi.clientapp.ClientAppUsersRMI;
 
 /**
@@ -24,12 +27,15 @@ public class AppServer {
     private Connection connection;
 
     public ClientAppUsersRMI usersRMI;
+    public ServerProcess serverProcess;
+    public AppDataService dataService;
 
     String url = "jdbc:mariadb://localhost:3306/SGDUSERDB?useSSL=false&serverTimezone=UTC";
     String dbUser = "APPSERVERUSER";
     String dbPassword = "123";
-    
 
+    String dataServerRMIurl = "rmi://25.49.116.249:1099/dataserver";
+    
     public AppServer(String ip, String port, String serviceName){
         this.ip = ip;
         this.port = port;
@@ -52,16 +58,35 @@ public class AppServer {
             LocateRegistry.createRegistry(Integer.parseInt(port));
             
             //User endpoint setup
-            System.out.println("Initializing user service.");
+            System.out.println("Initializing user endpoint.");
             usersRMI = new UserRouterRMI(
                 new UserUseCase(
                     new MariaDBProvider(connection)
                 )
             );
             Naming.rebind(uri + "/user", usersRMI);
-            System.out.println("User service initialized on: " + uri + "/user");
+            System.out.println("User service endpoint on: " + uri + "/user");
 
             //FileSystem endpoint
+            System.out.println("Initializing data service.");
+            this.dataService = new AppDataService(this.dataServerRMIurl);
+            if(this.dataService.Init()){
+                System.out.println("Connection to data server stablished");
+                Naming.rebind(uri + "/data", dataService);
+                System.out.println("Data service endpoint on: " + uri + "/data");
+
+
+                System.out.println(this.dataService.getRoot().name);
+            }else{
+                System.err.println("Unable to connect to data server");
+            }
+            
+            //Notification Socket Process
+            System.out.println("Initializing notification socket module.");
+            this.serverProcess = new ServerProcess(
+                new ServerSocket(1803, 100)
+            );
+            serverProcess.Init();
 
             System.out.println("Appserver ready.");
             return true;    

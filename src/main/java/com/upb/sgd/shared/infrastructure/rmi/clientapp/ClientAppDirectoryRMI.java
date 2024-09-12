@@ -5,21 +5,18 @@
 
 package com.upb.sgd.shared.infrastructure.rmi.clientapp;
 
+import java.nio.file.Path;
 import java.rmi.Remote;
-import java.util.List;
+import java.rmi.RemoteException;
 
-import com.upb.sgd.shared.domain.Document;
+import com.upb.sgd.shared.domain.Directory;
 import com.upb.sgd.shared.domain.Folder;
-import com.upb.sgd.shared.domain.Permissions;
 
 /**
  *
  * @author sebastian
  */
 public interface ClientAppDirectoryRMI extends Remote{
-    public Folder GetFolder(int id);
-    public Folder QueryFolder(String args);
-    public List<Document> GitDocument(int id);
-    public boolean UpdateDirectoryPerms(int id,Permissions user, Permissions group, Permissions other);
-    public boolean RestoreDirectory(int id, int version);
+    public Folder getRoot() throws RemoteException;
+    public Directory addDirectory(Directory directory, Path path) throws RemoteException;
 }

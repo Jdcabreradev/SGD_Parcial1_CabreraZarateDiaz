@@ -12,6 +12,7 @@ import com.upb.sgd.shared.domain.Group;
 import com.upb.sgd.shared.domain.User;
 
 public class MariaDBProvider implements UserDBProvider {
+
     private final Connection connection;
 
     public MariaDBProvider(Connection connection) {
@@ -20,16 +21,26 @@ public class MariaDBProvider implements UserDBProvider {
 
     @Override
     public User GetUser(int id) {
-        String query = "SELECT * FROM USER WHERE Id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
+        String queryUser = "SELECT * FROM USER WHERE Id = ?";
+        String queryGroups = "SELECT GroupId FROM USERGROUP WHERE UserId = ?";
+
+        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser); PreparedStatement stmtGroups = connection.prepareStatement(queryGroups)) {
+            stmtUser.setInt(1, id);
+            ResultSet rsUser = stmtUser.executeQuery();
+            if (rsUser.next()) {
                 User u = new User();
-                u.Id = rs.getInt("Id");
-                u.username = rs.getString("username");
-                u.password = rs.getString("password");
-                u.groupPermId = rs.getInt("groupPermId");
+                u.Id = rsUser.getInt("Id");
+                u.username = rsUser.getString("username");
+                u.password = rsUser.getString("password");
+
+                stmtGroups.setInt(1, id);
+                ResultSet rsGroups = stmtGroups.executeQuery();
+                List<Integer> groupIds = new ArrayList<>();
+                while (rsGroups.next()) {
+                    groupIds.add(rsGroups.getInt("GroupId"));
+                }
+                u.groupPermIds = groupIds;
+
                 return u;
             }
         } catch (SQLException e) {
@@ -40,16 +51,27 @@ public class MariaDBProvider implements UserDBProvider {
 
     @Override
     public List<User> GetUsers() {
-        String query = "SELECT * FROM USER";
+        String queryUser = "SELECT * FROM USER";
+        String queryGroups = "SELECT GroupId FROM USERGROUP WHERE UserId = ?";
         List<User> users = new ArrayList<>();
-        try (PreparedStatement stmt = connection.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
+
+        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser); PreparedStatement stmtGroups = connection.prepareStatement(queryGroups)) {
+
+            ResultSet rsUser = stmtUser.executeQuery();
+            while (rsUser.next()) {
                 User u = new User();
-                u.Id = rs.getInt("Id");
-                u.username = rs.getString("username");
-                u.password = rs.getString("password");
-                u.groupPermId = rs.getInt("groupPermId");
+                u.Id = rsUser.getInt("Id");
+                u.username = rsUser.getString("username");
+                u.password = rsUser.getString("password");
+
+                stmtGroups.setInt(1, u.Id);
+                ResultSet rsGroups = stmtGroups.executeQuery();
+                List<Integer> groupIds = new ArrayList<>();
+                while (rsGroups.next()) {
+                    groupIds.add(rsGroups.getInt("GroupId"));
+                }
+                u.groupPermIds = groupIds;
+
                 users.add(u);
             }
         } catch (SQLException e) {
@@ -60,17 +82,28 @@ public class MariaDBProvider implements UserDBProvider {
 
     @Override
     public User Login(String username, String password) {
-        String query = "SELECT * FROM USER WHERE username = ? AND password = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
+        String queryUser = "SELECT * FROM USER WHERE username = ? AND password = ?";
+        String queryGroups = "SELECT GroupId FROM USERGROUP WHERE UserId = ?";
+
+        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser); PreparedStatement stmtGroups = connection.prepareStatement(queryGroups)) {
+
+            stmtUser.setString(1, username);
+            stmtUser.setString(2, password);
+            ResultSet rsUser = stmtUser.executeQuery();
+            if (rsUser.next()) {
                 User u = new User();
-                u.Id = rs.getInt("Id");
-                u.username = rs.getString("username");
-                u.password = rs.getString("password");
-                u.groupPermId = rs.getInt("groupPermId");
+                u.Id = rsUser.getInt("Id");
+                u.username = rsUser.getString("username");
+                u.password = rsUser.getString("password");
+                u.isAdmin = rsUser.getInt("isAdmin") == 1;
+                stmtGroups.setInt(1, u.Id);
+                ResultSet rsGroups = stmtGroups.executeQuery();
+                List<Integer> groupIds = new ArrayList<>();
+                while (rsGroups.next()) {
+                    groupIds.add(rsGroups.getInt("GroupId"));
+                }
+                u.groupPermIds = groupIds;
+
                 return u;
             }
         } catch (SQLException e) {
@@ -108,15 +141,27 @@ public class MariaDBProvider implements UserDBProvider {
     }
 
     @Override
-    public Boolean UpdateUser(int id, int groupPermId, String username, String password) {
-        String query = "UPDATE USER SET username = ?, password = ?, groupPermId = ? WHERE Id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            stmt.setInt(3, groupPermId);
-            stmt.setInt(4, id);
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
+    public Boolean UpdateUser(int id, List<Integer> groupPermIds, String username, String password) {
+        String queryUser = "UPDATE USER SET username = ?, password = ? WHERE Id = ?";
+        String deleteUserGroups = "DELETE FROM USERGROUP WHERE UserId = ?";
+        String insertUserGroups = "INSERT INTO USERGROUP (UserId, GroupId) VALUES (?, ?)";
+
+        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser); PreparedStatement stmtDeleteGroups = connection.prepareStatement(deleteUserGroups); PreparedStatement stmtInsertGroups = connection.prepareStatement(insertUserGroups)) {
+            stmtUser.setString(1, username);
+            stmtUser.setString(2, password);
+            stmtUser.setInt(3, id);
+            stmtUser.executeUpdate();
+            stmtDeleteGroups.setInt(1, id);
+            stmtDeleteGroups.executeUpdate();
+
+            for (Integer groupId : groupPermIds) {
+                stmtInsertGroups.setInt(1, id);
+                stmtInsertGroups.setInt(2, groupId);
+                stmtInsertGroups.addBatch();
+            }
+            stmtInsertGroups.executeBatch();
+
+            return true;
         } catch (SQLException e) {
             System.out.println("Error updating user: " + e.getMessage());
         }
@@ -145,8 +190,7 @@ public class MariaDBProvider implements UserDBProvider {
     public List<Group> GetGroups() {
         String query = "SELECT * FROM `GROUP`";
         List<Group> groups = new ArrayList<>();
-        try (PreparedStatement stmt = connection.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
+        try (PreparedStatement stmt = connection.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 Group g = new Group();
                 g.Id = rs.getInt("Id");

@@ -30,7 +30,10 @@ public class AppServerUnitTest {
     @Test
     public void testLogin() throws RemoteException {
         User result = appserver.usersRMI.Login("utest", "123");
-        System.out.println(result.groupPermId);
+        for (int i = 0; i < result.groupPermIds.size(); i++) {
+            System.out.println(result.groupPermIds.get(i));
+        }
+        
         assertEquals(result.username, "utest");
     }
 
