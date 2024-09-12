@@ -32,5 +32,8 @@ VALUES ('utest', '123',true);
 INSERT INTO USER (username, `password`, isAdmin) 
 VALUES ('noadmin', '123',false);
 
+INSERT INTO USER (username, `password`, isAdmin) 
+VALUES ('noadmin2', '123',false);
+
 INSERT INTO USERGROUP (UserId,GroupId) VALUES 
 (1,1);

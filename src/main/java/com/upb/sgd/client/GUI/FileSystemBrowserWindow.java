@@ -35,6 +35,7 @@ import javax.swing.tree.DefaultTreeModel;
 import com.upb.sgd.client.GUI.Interface.AbstractGUIWindow;
 import com.upb.sgd.client.GUI.Utils.DocumentCellRenderer;
 import com.upb.sgd.client.Mediator.ClientMediator;
+import com.upb.sgd.shared.domain.DirType;
 import com.upb.sgd.shared.domain.Directory;
 import com.upb.sgd.shared.domain.Document;
 import com.upb.sgd.shared.domain.Folder;
@@ -306,8 +307,8 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         DefaultListModel<Document> listModel = new DefaultListModel<>();
         if (folder != null) {
             for (Directory dir : folder.children) {
-                if (dir instanceof Document document) {
-                    listModel.addElement(document);
+                if (dir.dirType == DirType.FILE) {
+                    listModel.addElement((Document)dir);
                 }
             }
         }
