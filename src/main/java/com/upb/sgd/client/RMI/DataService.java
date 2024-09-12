@@ -62,6 +62,14 @@ public class DataService {
         }
     }
 
+    public void CreateFolder(Directory folder,String path){
+        try {
+            this.dataRMI.addDirectory(folder,path);
+        } catch (RemoteException e) {
+            System.out.println("Unable to create folder" + e.getMessage());
+        }
+    }
+
     public Document DownloadFile(Document document, String path){
         try {
             return this.dataRMI.downladFile(document,path);

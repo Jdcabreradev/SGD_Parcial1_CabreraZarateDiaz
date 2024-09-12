@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.DefaultListModel;
@@ -458,14 +459,30 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         newFolderDialog.setLayout(new BorderLayout());
 
         JPanel folderPanel = new JPanel();
+        folderPanel.add(new JLabel("Permissions:"));
+        JTextField perms = new JTextField(20);
+        folderPanel.add(perms);
         JTextField foldername = new JTextField(20);
 
         folderPanel.add(foldername, BorderLayout.CENTER);
 
         JButton uploadButton = new JButton("Create");
         uploadButton.addActionListener(e -> {
-
+            Folder newFolder = new Folder();
+            newFolder.parent = this.mediator.dataService.currentFolder.id;
+            newFolder.name = foldername.getText();
+            newFolder.path = foldername.getText();
+            newFolder.owner = this.mediator.loggedUser.Id;
+            newFolder.group = this.mediator.loggedUser.groupPermIds.getFirst();
+            newFolder.permissions = perms.getText();
+            newFolder.tags = new ArrayList<>();
+            System.out.println(newFolder.parent);
+        this.mediator.dataService.CreateFolder(newFolder,this.mediator.dataService.currentFolder.getPath().toString());
         });
+
+        folderPanel.add(uploadButton,BorderLayout.CENTER);
+
+        folderPanel.add(uploadButton,BorderLayout.CENTER);
 
         newFolderDialog.add(folderPanel);
         newFolderDialog.setVisible(true);
