@@ -11,7 +11,7 @@ public interface ClientAppUsersRMI extends Remote {
     public User GetUser(int id) throws RemoteException;
     public List<User> GetUsers() throws RemoteException;
     public User Login(String username, String password) throws RemoteException;
-    public Boolean CreateUser(int groupPermId, String username, String password) throws RemoteException;
+    public Boolean CreateUser(int groupPermId, String username, String password, boolean isAdmin) throws RemoteException;
     //public Boolean DeleteUser(int id) throws RemoteException;
     public Boolean UpdateUser(int id, List<Integer> groupPermId, String username, String password) throws RemoteException; 
 
