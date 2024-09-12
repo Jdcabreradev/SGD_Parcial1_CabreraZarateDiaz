@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class MariaDBProvider {
-    private static final String url = "jdbc:mariadb://192.168.1.91:3306/SGD_DEV?useSSL=false&serverTimezone=UTC";
+    private static final String url = "jdbc:mariadb://localhost:3306/SGD_DEV?useSSL=false&serverTimezone=UTC";
     private static final String dbUser = "remote";
     private static final String dbPassword = "remote";
 
