@@ -432,6 +432,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
 // Crear un JFileChooser para seleccionar la ubicación de guardado
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Seleccionar ubicación para guardar el archivo");
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
         // Configurar el JFileChooser para guardar archivos
         int userSelection = fileChooser.showSaveDialog(null);
@@ -442,7 +443,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
 
             try {
                 document = this.mediator.dataService.DownloadFile(document,document.getPath().toString());
-                FileUtils.writeByteArrayToFile(filePath, document.fileData);
+                FileUtils.writeByteArrayToFile(filePath.resolve(document.name), document.fileData);
                 System.out.println("Archivo guardado en: " + filePath.toString());
             } catch (IOException e) {
                 e.printStackTrace();
