@@ -136,7 +136,14 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
     }
 
     @Override
-    public Document downloadFile(Document document) {
-        return null;
+    public Document downloadFile(Document document,String path) {
+        String lastVersion = databaseService.getLatestVersionName(document.id);
+        try {
+            document.fileData = FileUtils.readFileToByteArray(Paths.get(path).resolve(lastVersion));
+            return document;
+        } catch (IOException e) {
+            System.out.println("[FILESYSTEM] Error al descargar el archivo " + document.name + ": " + e.toString());
+            return document;
+        }
     }
 }

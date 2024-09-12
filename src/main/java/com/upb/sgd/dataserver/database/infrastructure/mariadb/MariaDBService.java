@@ -199,6 +199,26 @@ public class MariaDBService implements DatabaseServicePort {
         }
     }
 
+    @Override
+    public String getLatestVersionName(int directoryId) {
+        String latestVersionName = "";
+        String query = "SELECT name FROM DirectoryGit WHERE directory_id = ? ORDER BY createdAt DESC LIMIT 1";
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, directoryId);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                latestVersionName = resultSet.getString("name");
+            }
+        } catch (SQLException e) {
+            System.out.println("[MARIADB] Error al obtener la versión más reciente para el directorio " + directoryId + ": " + e);
+        }
+
+        return latestVersionName;
+    }
+
+
     private List<String> getTagsForDirectory(int directoryId) {
         List<String> tags = new ArrayList<>();
         String query = "SELECT t.name FROM Tag t " +

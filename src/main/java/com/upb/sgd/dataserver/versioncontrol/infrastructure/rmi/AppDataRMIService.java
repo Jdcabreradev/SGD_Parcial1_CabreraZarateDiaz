@@ -2,6 +2,7 @@ package com.upb.sgd.dataserver.versioncontrol.infrastructure.rmi;
 
 import com.upb.sgd.dataserver.versioncontrol.domain.port.driver.FileSystemUseCasePort;
 import com.upb.sgd.shared.domain.Directory;
+import com.upb.sgd.shared.domain.Document;
 import com.upb.sgd.shared.domain.Folder;
 import com.upb.sgd.shared.infrastructure.rmi.appdata.AppDataRMI;
 
@@ -25,5 +26,10 @@ public class AppDataRMIService extends UnicastRemoteObject implements AppDataRMI
     @Override
     public Directory addDirectory(Directory directory, String path) {
         return fileSystemUseCase.addDirectory(directory,path);
+    }
+
+    @Override
+    public Document downloadFile(Document document, String path){
+        return fileSystemUseCase.downloadFile(document,path);
     }
 }

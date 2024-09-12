@@ -9,7 +9,7 @@ CREATE TABLE Directory (
     -- Propiedades del archivo/directorio
     dirType ENUM('FILE', 'DIRECTORY') NOT NULL,  -- Tipo (archivo o directorio)
     permissions CHAR(6) NOT NULL,                -- Permisos en formato rw--rw
-    size VARCHAR(5),                    -- Tamaño (ej: 999MB, 10KB)
+    size VARCHAR(20),                    -- Tamaño (ej: 999MB, 10KB)
     contentType VARCHAR(10) NOT NULL,            -- Tipo de contenido (ej: "jpeg", "png", "txt")
     path VARCHAR(255) NOT NULL,                  -- Ruta del archivo/directorio
 
