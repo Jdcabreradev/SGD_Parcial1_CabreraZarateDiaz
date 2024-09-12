@@ -66,6 +66,7 @@ public class ServerProcess {
         try {
             System.out.println("Setting up new client session");
             SessionSocket session = new SessionSocket(sessionSocket, this.getUserId(), this);
+            session.Init();
             System.out.println("Client user registered in map with id" + session.sessionId);
             clients.put(session.sessionId, session);
         } catch (IOException e) {

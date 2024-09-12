@@ -72,6 +72,9 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
 
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(e -> {
+            this.mediator.clientProcess.Write(
+                        ("User: " + this.mediator.loggedUser.username + " Refreshed their directory!").getBytes(StandardCharsets.UTF_8)
+                );
             RefreshFileSystemView();  // Method to refresh the file system view
         });
         toolBar.add(refreshButton);
@@ -263,6 +266,9 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                     System.out.println("unable to find uploadFile path");
                 }
                 this.mediator.dataService.UploadFile(uploadDoc, this.mediator.dataService.currentFolder.getPath().toString());
+                this.mediator.clientProcess.Write(
+                        ("User: " + this.mediator.loggedUser.username + " Uploaded a new file!").getBytes(StandardCharsets.UTF_8)
+                );
                 System.out.println("Uploading document: " + documentName + " | Permissions: " + permissions + " | Tags: " + tags + " | File: " + filePath);
                 uploadDialog.dispose();
             } else {
@@ -336,7 +342,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                 }
                 this.mediator.dataService.UploadFile(uploadDoc, this.mediator.dataService.currentFolder.getPath().toString());
                 this.mediator.clientProcess.Write(
-                        ("User: " + this.mediator.loggedUser.username + " Uploaded a new file!").getBytes(StandardCharsets.UTF_8)
+                        ("User: " + this.mediator.loggedUser.username + " updated a new file!").getBytes(StandardCharsets.UTF_8)
                 );
 
                 System.out.println("Updating document");
