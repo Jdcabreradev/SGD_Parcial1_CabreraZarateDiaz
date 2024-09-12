@@ -18,12 +18,12 @@ public class AppDataRMIService extends UnicastRemoteObject implements AppDataRMI
 
 
     @Override
-    public Folder getRoot() throws RemoteException {
+    public Folder getRoot() {
         return fileSystemUseCase.getRoot();
     }
 
     @Override
-    public Directory addDirectory(Directory directory, Path path) throws RemoteException {
+    public Directory addDirectory(Directory directory, Path path) {
         return fileSystemUseCase.addDirectory(directory,path);
     }
 }

@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -20,7 +19,7 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
     final DatabaseServicePort databaseService;
     final Path Workdir = Paths.get("/srv/nfs/share");
 
-    public FileSystemUseCase(DatabaseServicePort databaseService) throws RemoteException {
+    public FileSystemUseCase(DatabaseServicePort databaseService) {
         this.databaseService = databaseService;
     }
 
@@ -70,5 +69,18 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
            System.out.println("[FILESYSTEM] Error al crear directorio "+directory.name+": "+e.toString());
            return null;
        }
+    }
+
+    @Override
+    public boolean deleteDirectory(Directory directory){
+        if (databaseService.deleteDirectory(directory)){
+            try {
+                Files.delete(Workdir.resolve(directory.getPath()));
+            } catch (IOException e) {
+                System.out.println("[FILESYSTEM] Error al eliminar directorio "+directory.name+": "+e.toString());
+                return false;
+            }
+        }
+        return false;
     }
 }

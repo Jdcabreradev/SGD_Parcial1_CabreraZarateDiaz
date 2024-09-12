@@ -7,19 +7,20 @@ import com.upb.sgd.dataserver.versioncontrol.domain.port.driver.FileSystemUseCas
 import com.upb.sgd.dataserver.versioncontrol.infrastructure.rmi.AppDataRMIService;
 import com.upb.sgd.shared.infrastructure.rmi.appdata.AppDataRMI;
 
+import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
+import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 public class Main {
-    public static void main(String[] args) throws RemoteException, AlreadyBoundException {
+    public static void main(String[] args) throws RemoteException, AlreadyBoundException, MalformedURLException {
+        System.setProperty("java.rmi.server.hostname", "25.49.116.249");
+        LocateRegistry.createRegistry(Integer.parseInt("1099"));
         FileSystemUseCasePort fileSystem = new FileSystemUseCase(new MariaDBService(MariaDBProvider.MariaDBConn()));
         AppDataRMI service = new AppDataRMIService(fileSystem);
-
-        Registry dataServer = LocateRegistry.createRegistry(1099);
-        dataServer.bind("/dataserver",service);
-
+        Naming.rebind("dataserver",service);
         System.out.println("Server is running :D!");
     }
 }
