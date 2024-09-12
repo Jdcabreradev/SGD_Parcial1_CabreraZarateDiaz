@@ -8,6 +8,8 @@ public class Folder extends Directory {
     public List<Directory> children;
 
     public Folder() {
+        this.dirType = DirType.DIRECTORY;
+        this.contentType = "directory";
         this.children = new ArrayList<>();
     }
 

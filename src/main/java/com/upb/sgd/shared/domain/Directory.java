@@ -30,6 +30,11 @@ public abstract class Directory implements Serializable {
     // Others
     public Directory parentDirectory;
 
+    public Directory(){
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+    }
+
     public Path getPath() {
         List<String> pathSegments = new ArrayList<>();
         collectPathSegments(this, pathSegments);
