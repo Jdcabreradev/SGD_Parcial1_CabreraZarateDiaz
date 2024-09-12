@@ -34,8 +34,7 @@ public class AppServer {
     String dbUser = "APPSERVERUSER";
     String dbPassword = "123";
 
-
-    String dataServerRMIurl = "rmi://127.0.0.2/data";
+    String dataServerRMIurl = "rmi://25.49.116.249:1099/dataserver";
     
     public AppServer(String ip, String port, String serviceName){
         this.ip = ip;

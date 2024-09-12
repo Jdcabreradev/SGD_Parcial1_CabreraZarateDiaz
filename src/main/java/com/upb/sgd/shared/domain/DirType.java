@@ -1,8 +1,8 @@
 package com.upb.sgd.shared.domain;
 
 public enum DirType {
-    FILE(true),
-    FOLDER(false);
+    FILE(false),
+    DIRECTORY(true);
 
     private final boolean isDir;
 
@@ -11,11 +11,15 @@ public enum DirType {
     }
 
     public boolean isFile() {
-        return isDir;
+        return !isDir;
+    }
+
+    public  boolean isFolder(){
+        return  isDir;
     }
 
     public static DirType fromBoolean(boolean isFile) {
-        return isFile ? FILE : FOLDER;
+        return isFile ? DIRECTORY : FILE;
     }
 }
 
