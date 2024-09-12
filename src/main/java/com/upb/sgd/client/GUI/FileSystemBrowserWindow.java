@@ -73,8 +73,8 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(e -> {
             this.mediator.clientProcess.Write(
-                        ("User: " + this.mediator.loggedUser.username + " Refreshed their directory!").getBytes(StandardCharsets.UTF_8)
-                );
+                    ("User: " + this.mediator.loggedUser.username + " Refreshed their directory!").getBytes(StandardCharsets.UTF_8)
+            );
             RefreshFileSystemView();  // Method to refresh the file system view
         });
         toolBar.add(refreshButton);
@@ -408,7 +408,10 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
     private void PopulateFolderTree(DefaultMutableTreeNode parentNode, Folder folder) {
         for (Directory child : folder.children) {
             DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(child);
-            parentNode.add(childNode);
+
+            if (this.mediator.loggedUser.groupPermIds.contains(child.group) || this.mediator.loggedUser.Id == child.owner) {
+                parentNode.add(childNode);
+            }
             if (child instanceof Folder tmpFolder) {
                 PopulateFolderTree(childNode, tmpFolder);
             }
@@ -420,7 +423,10 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         if (folder != null) {
             for (Directory dir : folder.children) {
                 if (dir.dirType == DirType.FILE) {
-                    listModel.addElement((Document) dir);
+                    if (this.mediator.loggedUser.groupPermIds.contains(dir.group) || this.mediator.loggedUser.Id == dir.owner) {
+                        listModel.addElement((Document) dir);
+                    }
+
                 }
             }
         }
@@ -442,7 +448,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
             Path filePath = Paths.get(fileChooser.getSelectedFile().getAbsolutePath());
 
             try {
-                document = this.mediator.dataService.DownloadFile(document,document.getPath().toString());
+                document = this.mediator.dataService.DownloadFile(document, document.getPath().toString());
                 FileUtils.writeByteArrayToFile(filePath.resolve(document.name), document.fileData);
                 System.out.println("Archivo guardado en: " + filePath.toString());
             } catch (IOException e) {
