@@ -25,7 +25,7 @@ CREATE TABLE USERGROUP(
     CONSTRAINT fk_ug_userId FOREIGN KEY (UserId) REFERENCES `USER`(Id)
 );
 
-/* This group NEEDS to exists, don't delete! */
+/* This group NEEDS to exist, don't delete! */
 INSERT INTO `GROUP` (`Name`) VALUES ('New Users');
 
 INSERT INTO `GROUP` (`Name`) VALUES ('test');
