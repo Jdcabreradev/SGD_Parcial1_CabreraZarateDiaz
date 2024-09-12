@@ -18,5 +18,5 @@ import com.upb.sgd.shared.domain.Folder;
  */
 public interface ClientAppDirectoryRMI extends Remote{
     public Folder getRoot() throws RemoteException;
-    public Directory addDirectory(Directory directory, Path path) throws RemoteException;
+    public Directory addDirectory(Directory directory, String path) throws RemoteException;
 }

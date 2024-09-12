@@ -23,7 +23,7 @@ public class AppDataRMIService extends UnicastRemoteObject implements AppDataRMI
     }
 
     @Override
-    public Directory addDirectory(Directory directory, Path path) {
+    public Directory addDirectory(Directory directory, String path) {
         return fileSystemUseCase.addDirectory(directory,path);
     }
 }

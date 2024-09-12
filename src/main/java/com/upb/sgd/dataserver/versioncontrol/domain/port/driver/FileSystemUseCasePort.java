@@ -7,6 +7,6 @@ import java.nio.file.Path;
 
 public interface FileSystemUseCasePort {
     Folder getRoot();
-    Directory addDirectory(Directory directory, Path path);
+    Directory addDirectory(Directory directory, String path);
     boolean deleteDirectory(Directory directory);
 }
