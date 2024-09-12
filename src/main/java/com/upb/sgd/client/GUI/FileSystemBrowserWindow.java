@@ -213,7 +213,9 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                 selectedFilePath.setText(selectedFile.getAbsolutePath());
                 Document uploadDoc = new Document();
                 uploadDoc.name = selectedFile.getName();
-                uploadDoc.path = selectedFilePath.getName();
+                uploadDoc.permissions = "";
+                uploadDoc.contentType = selectedFile.getName().substring(selectedFile.getName().lastIndexOf('.'));
+                uploadDoc.path = selectedFile.getName();
                 try {
                     uploadDoc.fileData = FileUtils.readFileToByteArray(Paths.get(selectedFile.getAbsolutePath()));
                 } catch (IOException ex) {
@@ -352,6 +354,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
 
     private void RefreshFileSystemView(){
         //TODO: Call remote update to rootFolder
+        mediator.dataService.GetRoot();
         UpdateFolderTree(mediator.dataService.rootFolder);
         UpdateDocumentList(mediator.dataService.rootFolder);
     }

@@ -5,7 +5,6 @@
 package com.upb.sgd.client.RMI;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -49,6 +48,7 @@ public class DataService {
     public void GetRoot() {
         try {
             this.rootFolder = this.dataRMI.getRoot();
+            this.currentFolder = rootFolder;
         } catch (IOException e) {
             System.out.println("Unable to retrieve remote root");
         }
