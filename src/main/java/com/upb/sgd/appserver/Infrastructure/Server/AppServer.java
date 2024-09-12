@@ -73,6 +73,10 @@ public class AppServer {
             if(this.dataService.Init()){
                 System.out.println("Connection to data server stablished");
                 Naming.rebind(uri + "/data", dataService);
+                System.out.println("Data service endpoint on: " + uri + "/data");
+
+
+                System.out.println(this.dataService.getRoot().name);
             }else{
                 System.err.println("Unable to connect to data server");
             }
