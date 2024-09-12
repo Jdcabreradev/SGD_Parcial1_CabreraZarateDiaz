@@ -1,9 +1,8 @@
 package com.upb.sgd.shared.domain;
 
-public class Document extends Directory{
+import java.util.Date;
+import java.util.List;
 
-    public Document(){
-        super();
-        this.dirType = DirType.FILE;
-    }
+public class Document extends Directory {
+    public byte[] fileData;
 }
