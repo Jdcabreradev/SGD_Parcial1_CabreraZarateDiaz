@@ -62,50 +62,48 @@ public class DataService {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    // Search method
-    private List<Document> searchForDocuments(String query) {
-        List<Document> result = new ArrayList<>();
-        searchFolder(rootFolder, query, result);
+    public Folder SearchForDocuments(String query) {
+        Folder result = new Folder();
+        result.name = "Query";
+        SearchFolder(rootFolder, query, result.children);
         return result;
     }
 
-    private void searchFolder(Folder folder, String query, List<Document> result) {
+    private void SearchFolder(Folder folder, String query, List<Directory> result) {
         for (Directory dir : folder.children) {
-            if (dir instanceof Document) {
-                Document doc = (Document) dir;
-                if (matchesQuery(doc, query)) {
-                    result.add(doc);
+            switch (dir) {
+                case Document doc -> {
+                    boolean tmpAccept = false;
+                    
+                    if (doc.name != null && (doc.name.toLowerCase().contains(query.toLowerCase()) || 
+                    doc.name.toLowerCase().equals(query.toLowerCase()))) {
+                        tmpAccept = true;
+                    }
+                    
+                    for (String tag : doc.tags) {
+                        if (tag != null && tag.toLowerCase().contains(query.toLowerCase())) {
+                            tmpAccept = true;
+                        }
+                    }
+                    
+                    if (doc.createdAt != null && doc.createdAt.toString().contains(query)) {
+                        tmpAccept = true;
+                    }
+                    
+                    if (doc.updatedAt != null && doc.updatedAt.toString().contains(query)) {
+                        tmpAccept = true;
+                    }
+                    
+                    if(tmpAccept){
+                        result.add(doc);
+                    }
+                    
                 }
-            } else if (dir instanceof Folder) {
-                searchFolder((Folder) dir, query, result);
+                case Folder folder1 -> SearchFolder(folder1, query, result);
+                default -> {
+                }
             }
         }
-    }
-
-    private boolean matchesQuery(Document doc, String query) {
-        // Check if query matches name
-        if (doc.name != null && doc.name.toLowerCase().contains(query.toLowerCase())) {
-            return true;
-        }
-
-        // Check if query matches tags
-        for (String tag : doc.tags) {
-            if (tag != null && tag.toLowerCase().contains(query.toLowerCase())) {
-                return true;
-            }
-        }
-
-        // Check if query matches creation date (format it as you need)
-        if (doc.createdAt != null && doc.createdAt.toString().contains(query)) {
-            return true;
-        }
-
-        // Check if query matches last updated date (format it as you need)
-        if (doc.updatedAt != null && doc.updatedAt.toString().contains(query)) {
-            return true;
-        }
-
-        return false;
     }
 
     String randomSize() {

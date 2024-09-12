@@ -10,7 +10,6 @@ import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.nio.file.ClosedDirectoryStreamException;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -115,6 +114,18 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         JPanel leftBottomPanel = new JPanel(new BorderLayout());
         JTextField leftSearchField = new JTextField();
         JButton leftSearchButton = new JButton("Search");
+
+        leftSearchButton.addActionListener(e->{
+            var result = this.mediator.dataService.SearchForDocuments(
+                leftSearchField.getText()
+            );
+
+            UpdateFolderTree(
+                result
+            );
+            UpdateDocumentList(result);
+        } );
+
         leftBottomPanel.add(leftSearchField, BorderLayout.CENTER);
         leftBottomPanel.add(leftSearchButton, BorderLayout.EAST);
         leftPanel.add(leftBottomPanel, BorderLayout.SOUTH);
@@ -325,5 +336,9 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         newFolderDialog.setVisible(true);
     }
 
-    private void RefreshFileSystemView(){}
+    private void RefreshFileSystemView(){
+        //TODO: Call remote update to rootFolder
+        UpdateFolderTree(mediator.dataService.rootFolder);
+        UpdateDocumentList(mediator.dataService.rootFolder);
+    }
 }
