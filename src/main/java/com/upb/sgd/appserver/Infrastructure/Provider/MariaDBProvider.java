@@ -24,7 +24,8 @@ public class MariaDBProvider implements UserDBProvider {
         String queryUser = "SELECT * FROM USER WHERE Id = ?";
         String queryGroups = "SELECT GroupId FROM USERGROUP WHERE UserId = ?";
 
-        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser); PreparedStatement stmtGroups = connection.prepareStatement(queryGroups)) {
+        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser);
+                PreparedStatement stmtGroups = connection.prepareStatement(queryGroups)) {
             stmtUser.setInt(1, id);
             ResultSet rsUser = stmtUser.executeQuery();
             if (rsUser.next()) {
@@ -55,7 +56,8 @@ public class MariaDBProvider implements UserDBProvider {
         String queryGroups = "SELECT GroupId FROM USERGROUP WHERE UserId = ?";
         List<User> users = new ArrayList<>();
 
-        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser); PreparedStatement stmtGroups = connection.prepareStatement(queryGroups)) {
+        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser);
+                PreparedStatement stmtGroups = connection.prepareStatement(queryGroups)) {
 
             ResultSet rsUser = stmtUser.executeQuery();
             while (rsUser.next()) {
@@ -85,7 +87,8 @@ public class MariaDBProvider implements UserDBProvider {
         String queryUser = "SELECT * FROM USER WHERE username = ? AND password = ?";
         String queryGroups = "SELECT GroupId FROM USERGROUP WHERE UserId = ?";
 
-        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser); PreparedStatement stmtGroups = connection.prepareStatement(queryGroups)) {
+        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser);
+                PreparedStatement stmtGroups = connection.prepareStatement(queryGroups)) {
 
             stmtUser.setString(1, username);
             stmtUser.setString(2, password);
@@ -113,13 +116,35 @@ public class MariaDBProvider implements UserDBProvider {
     }
 
     @Override
-    public Boolean CreateUser(int groupPermId, String username, String password) {
-        String query = "INSERT INTO USER (username, password, groupPermId) VALUES (?, ?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            stmt.setInt(3, groupPermId);
-            int rowsAffected = stmt.executeUpdate();
+    public Boolean CreateUser(int groupPermId, String username, String password, boolean isAdmin) {
+        String queryUser = "INSERT INTO USER (username, password, isAdmin) VALUES (?, ?, ?)";
+        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser,
+                PreparedStatement.RETURN_GENERATED_KEYS)) {
+            stmtUser.setString(1, username);
+            stmtUser.setString(2, password);
+            stmtUser.setBoolean(3, isAdmin);
+
+            int rowsAffected = stmtUser.executeUpdate();
+
+            if (rowsAffected > 0) {
+                // Retrieve the user id after the insert
+                ResultSet generatedKeys = stmtUser.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int newUserId = generatedKeys.getInt(1);
+
+                    // Insert retrieved id into usergroup
+                    String queryGroup = "INSERT INTO USERGROUP (UserId, GroupId) VALUES (?, ?)";
+                    try (PreparedStatement stmtGroup = connection.prepareStatement(queryGroup)) {
+                        stmtGroup.setInt(1, newUserId);
+                        stmtGroup.setInt(2, groupPermId);
+                        int userGroupRowsAffected = stmtGroup.executeUpdate();
+                        return userGroupRowsAffected > 0;
+                    } catch (SQLException e) {
+                        System.out.println("Error creating user: " + e.getMessage());
+                    }
+                    return false;
+                }
+            }
             return rowsAffected > 0;
         } catch (SQLException e) {
             System.out.println("Error creating user: " + e.getMessage());
@@ -146,7 +171,9 @@ public class MariaDBProvider implements UserDBProvider {
         String deleteUserGroups = "DELETE FROM USERGROUP WHERE UserId = ?";
         String insertUserGroups = "INSERT INTO USERGROUP (UserId, GroupId) VALUES (?, ?)";
 
-        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser); PreparedStatement stmtDeleteGroups = connection.prepareStatement(deleteUserGroups); PreparedStatement stmtInsertGroups = connection.prepareStatement(insertUserGroups)) {
+        try (PreparedStatement stmtUser = connection.prepareStatement(queryUser);
+                PreparedStatement stmtDeleteGroups = connection.prepareStatement(deleteUserGroups);
+                PreparedStatement stmtInsertGroups = connection.prepareStatement(insertUserGroups)) {
             stmtUser.setString(1, username);
             stmtUser.setString(2, password);
             stmtUser.setInt(3, id);

@@ -1,7 +1,6 @@
 package com.upb.sgd.client.GUI;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -9,6 +8,7 @@ import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -91,12 +91,12 @@ public class AdministratorWindow extends AbstractGUIWindow {
         leftPanelContent.add(groupListButton);
 
         // Bottom search bar with button on left panel
-        JPanel leftBottomPanel = new JPanel(new BorderLayout());
+        /* JPanel leftBottomPanel = new JPanel(new BorderLayout());
         JTextField leftSearchField = new JTextField();
         JButton leftSearchButton = new JButton("Search");
         leftBottomPanel.add(leftSearchField, BorderLayout.CENTER);
         leftBottomPanel.add(leftSearchButton, BorderLayout.EAST);
-        leftPanel.add(leftBottomPanel, BorderLayout.SOUTH);
+        leftPanel.add(leftBottomPanel, BorderLayout.SOUTH); */
 
         // Right panel buttons
         JPanel rightPanel = new JPanel(new GridLayout(2, 2, 50, 50));
@@ -130,10 +130,10 @@ public class AdministratorWindow extends AbstractGUIWindow {
         viewFrame.add(splitPane, BorderLayout.CENTER);
 
         // Footer setup (Placeholder for notifications)
-        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        /* JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel notificationLabel = new JLabel("Notifications will be displayed here.");
         footerPanel.add(notificationLabel);
-        viewFrame.add(footerPanel, BorderLayout.SOUTH);
+        viewFrame.add(footerPanel, BorderLayout.SOUTH); */
 
         // Show the frame
         viewFrame.setVisible(true);
@@ -205,6 +205,7 @@ public class AdministratorWindow extends AbstractGUIWindow {
     private void addUser() {
         JTextField usernameField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
+        JCheckBox isAdminCheckBox = new JCheckBox("Administrator");
 
         JPanel addUserPanel = new JPanel();
         addUserPanel.setLayout(new GridLayout(3, 2));
@@ -212,34 +213,21 @@ public class AdministratorWindow extends AbstractGUIWindow {
         addUserPanel.add(usernameField);
         addUserPanel.add(new JLabel("Password:"));
         addUserPanel.add(passwordField);
+        addUserPanel.add(isAdminCheckBox);
 
         int result = JOptionPane.showConfirmDialog(null, addUserPanel,
                 "Please Enter User Details", JOptionPane.OK_CANCEL_OPTION);
 
         if (result == JOptionPane.OK_OPTION) {
             try {
-                
-                /* // Create new group with same username
-                Group newGroup = new Group();
-                newGroup.Name = usernameField.getText();
-                mediator.userService.CreateGroup(newGroup.Name);
-                int groupId
-                
-                // Add new user to group
-                mediator.userService.CreateUser(newGroup.Id, usernameField.getText(),
-                new String(passwordField.getPassword()));
-                
-                JOptionPane.showMessageDialog(null, "User and group added successfully!"); */
-                
-
                 List<Group> allGroups = mediator.userService.GetGroups();
                 int newUserGroupId = -1;
+
                 for (Group group : allGroups) {
                     if (group.Name.equals("New Users")) {
                         newUserGroupId = group.Id;
                         break;
                     }
-
                 }
 
                 if (newUserGroupId == -1) {
@@ -249,13 +237,16 @@ public class AdministratorWindow extends AbstractGUIWindow {
 
                 try {
                     mediator.userService.CreateUser(newUserGroupId, usernameField.getText(),
-                            new String(passwordField.getPassword()));
-                } catch (Exception e) {
+                            new String(passwordField.getPassword()), isAdminCheckBox.isSelected());
+                    JOptionPane.showMessageDialog(null, "User created successfully.", "Success",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    loadUserList();
+                } catch (RemoteException e) {
                     System.err.println("Error creating user: " + e.getMessage());
                 }
 
             } catch (RemoteException e) {
-                System.err.println("Error creating user: " + e.getMessage());
+                System.err.println("Something went wrong: " + e.getMessage());
             }
         }
     }
@@ -312,7 +303,7 @@ public class AdministratorWindow extends AbstractGUIWindow {
             JPanel editUserPanel = new JPanel(new GridLayout(0, 2));
             editUserPanel.add(new JLabel("Username:"));
             editUserPanel.add(usernameField);
-            editUserPanel.add(new JLabel("Password (empty to not change)"));
+            editUserPanel.add(new JLabel("Password (empty to leave as is)"));
             editUserPanel.add(passwordField);
             editUserPanel.add(new JLabel("Groups:"));
             editUserPanel.add(new JScrollPane(groupList));

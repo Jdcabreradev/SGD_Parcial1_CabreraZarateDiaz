@@ -18,7 +18,7 @@ public interface UserDBProvider {
     public User GetUser(int id);
     public List<User> GetUsers();
     public User Login(String username, String password);
-    public Boolean CreateUser(int groupPermId, String username, String password);
+    public Boolean CreateUser(int groupPermId, String username, String password, boolean isAdmin);
     public Boolean DeleteUser(int id);
     public Boolean UpdateUser(int id, List<Integer> groupPermId, String username, String password);
     
