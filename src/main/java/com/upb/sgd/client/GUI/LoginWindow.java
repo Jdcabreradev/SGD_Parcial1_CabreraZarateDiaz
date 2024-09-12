@@ -44,7 +44,9 @@ public class LoginWindow extends AbstractGUIWindow {
                 if (this.mediator.loggedUser.isAdmin) {
                     showAdminPanel();
                 } else
-                    showSuccessTab();
+                    this.mediator.ChangeCurrentGUIWindow(
+                        new FileSystemBrowserWindow(this.mediator)
+                    );
             } else {
                 JOptionPane.showMessageDialog(loginFrame, "Login Failed", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -92,7 +94,7 @@ public class LoginWindow extends AbstractGUIWindow {
         loginFrame.setVisible(true);
     }
 
-    private void showSuccessTab() {
+    /*private void showSuccessTab() {
         JPanel successPanel = new JPanel();
         successPanel.add(new JLabel("User logged in successfully!"));
 
@@ -103,7 +105,7 @@ public class LoginWindow extends AbstractGUIWindow {
         loginFrame.add(tabbedPane);
         loginFrame.revalidate();
         loginFrame.repaint();
-    }
+    }*/
 
     private void showAdminPanel() {  // NOT WORKING YET!!!
         JPanel adminPanel = new JPanel();
