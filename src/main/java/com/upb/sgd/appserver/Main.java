@@ -14,7 +14,7 @@ import com.upb.sgd.appserver.Infrastructure.Server.AppServer;
  */
 public class Main {
     public static void main(String[] args) {
-        AppServer appServer = new AppServer("localhost", "1802", "appserver");
+        AppServer appServer = new AppServer("25.49.100.226", "1802", "appserver");
         appServer.Init();
     }
 }

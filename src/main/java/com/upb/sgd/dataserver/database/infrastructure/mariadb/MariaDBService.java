@@ -7,11 +7,9 @@ import com.upb.sgd.shared.domain.Document;
 import com.upb.sgd.shared.domain.Folder;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 public class MariaDBService implements DatabaseServicePort {
 
@@ -44,11 +42,79 @@ public class MariaDBService implements DatabaseServicePort {
         return directories;
     }
 
+    @Override
+    public Directory createDirectory(Directory directory) {
+        String insertQuery = "INSERT INTO Directory (name, owner, group_id, parent, dirType, permissions, size, contentType, path) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement statement = connection.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, directory.name);
+            statement.setInt(2, directory.owner);
+            statement.setInt(3, directory.group);
+            statement.setObject(4, directory.parent == 0 ? null : directory.parent);
+            statement.setString(5, directory.dirType.name());
+            statement.setString(6, directory.permissions);
+            statement.setString(7, directory.size);
+            statement.setString(8, directory.contentType);
+            statement.setString(9, directory.path);
+
+            int affectedRows = statement.executeUpdate();
+
+            ResultSet resultSet = statement.getGeneratedKeys();
+            if (resultSet.next()) {
+                directory.id = resultSet.getInt(1);
+                return directory;
+            }
+        } catch (SQLException e) {
+            System.out.println("[MARIADB] Error al crear el directory " + directory.name + ": " + e);
+        }
+        return null;
+    }
+
+    @Override
+    public boolean deleteDirectory(Directory directory) {
+        String deleteDirectoryGitQuery = "DELETE FROM DirectoryGit WHERE directory_id = ?";
+        String deleteDirectoryQuery = "DELETE FROM Directory WHERE id = ?";
+
+        try {
+            if (directory.dirType == DirType.FILE) {
+                try (PreparedStatement deleteGitStatement = connection.prepareStatement(deleteDirectoryGitQuery)) {
+                    deleteGitStatement.setInt(1, directory.id);
+                    deleteGitStatement.executeUpdate();
+                }
+            }
+
+            try (PreparedStatement deleteDirectoryStatement = connection.prepareStatement(deleteDirectoryQuery)) {
+                deleteDirectoryStatement.setInt(1, directory.id);
+                int affectedRows = deleteDirectoryStatement.executeUpdate();
+
+                return affectedRows > 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("[MARIADB] Error al eliminar el directory " + directory.name + ": " + e);
+            return false;
+        }
+    }
+
+    @Override
+    public void createGitVersion(int directoryId, String versionName){
+        String insertQuery = "INSERT INTO DirectoryGit (directory_id, name) VALUES (?, ?)";
+
+        try (PreparedStatement statement = connection.prepareStatement(insertQuery)) {
+            statement.setInt(1, directoryId);
+            statement.setString(2, versionName);
+
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("[MARIADB] Error al crear la versión para el directory ID " + directoryId + ": " + e);
+        }
+    }
+
     private Directory mapResultSetToDirectory(ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("id");
         String name = resultSet.getString("name");
         int owner = resultSet.getInt("owner");
-        int group = resultSet.getInt("group");
+        int group = resultSet.getInt("group_id");
         Integer parent = resultSet.getObject("parent", Integer.class); // Maneja el caso nulo
         String path = resultSet.getString("path");
         DirType dirType = DirType.valueOf(resultSet.getString("dirType"));
