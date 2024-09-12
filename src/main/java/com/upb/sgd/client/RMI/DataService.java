@@ -58,7 +58,7 @@ public class DataService {
         try {
             this.dataRMI.addDirectory(file,path);
         } catch (RemoteException e) {
-            System.out.println("Unable to upload file");
+            System.out.println("Unable to upload file" + e.getMessage());
         }
     }
 

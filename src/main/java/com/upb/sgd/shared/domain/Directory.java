@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 public abstract class Directory implements Serializable {
+
     // Identity
     public int id;
     public String name;
@@ -30,7 +31,7 @@ public abstract class Directory implements Serializable {
     // Others
     public Directory parentDirectory;
 
-    public Directory(){
+    public Directory() {
         this.createdAt = new Date();
         this.updatedAt = new Date();
     }
@@ -48,7 +49,7 @@ public abstract class Directory implements Serializable {
         pathSegments.add(directory.name);
     }
 
-        @Override
+    @Override
     public String toString() {
         return this.name;
     }
