@@ -1,5 +1,7 @@
 package com.upb.sgd.shared.domain;
 
+import org.checkerframework.checker.units.qual.A;
+
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +36,7 @@ public abstract class Directory implements Serializable {
     public Directory() {
         this.createdAt = new Date();
         this.updatedAt = new Date();
+        this.tags = new ArrayList<>();
     }
 
     public Path getPath() {
