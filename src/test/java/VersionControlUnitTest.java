@@ -83,7 +83,7 @@ public class VersionControlUnitTest {
 //    }
 
     @Test
-    public void deleteTest(){
+    public void deleteTest() throws IOException {
         int currentFolderChildren = rootFolder.children.size();
 
         Folder deleteFolder = new Folder();
@@ -99,5 +99,22 @@ public class VersionControlUnitTest {
             rootFolder.AddDirectory(dFolder);
         }
 
+        boolean delete = fileSystem.deleteDirectory(dFolder);
+        System.out.println(delete);
+
+        Document newDocument = new Document();
+        newDocument.name = "doc.txt";
+        newDocument.path = "doc.txt";
+        newDocument.contentType = "txt";
+        newDocument.owner = 1;
+        newDocument.group = 1;
+        newDocument.parent = currentFolder.id;
+        newDocument.permissions = "rwrwrw";
+        newDocument.fileData = FileUtils.readFileToByteArray(Paths.get("/srv/nfs/Hola.txt"));
+
+        Document addedDoc = (Document) fileSystem.addDirectory(newDocument,currentFolder.getPath());
+        if (addedDoc != null){
+            currentFolder.AddDirectory(addedDoc);
+        }
     }
 }
