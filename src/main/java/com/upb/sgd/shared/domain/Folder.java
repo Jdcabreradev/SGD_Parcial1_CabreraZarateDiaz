@@ -1,7 +1,6 @@
 package com.upb.sgd.shared.domain;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class Folder extends Directory {

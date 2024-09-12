@@ -2,12 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package com.upb.sgd.client.RMI;
 
-import java.rmi.RemoteException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import com.upb.sgd.shared.domain.DirType;
+import com.upb.sgd.shared.domain.Directory;
 import com.upb.sgd.shared.domain.Document;
 import com.upb.sgd.shared.domain.Folder;
 import com.upb.sgd.shared.domain.Permissions;
@@ -17,43 +21,234 @@ import com.upb.sgd.shared.infrastructure.rmi.clientapp.ClientAppDirectoryRMI;
  *
  * @author sebastian
  */
-public class DataService{
-    private final String url;
-    private ClientAppDirectoryRMI usersRMI;
-    public Folder root;
+public class DataService {
 
-    public DataService(String url){
+    private final String url;
+    private ClientAppDirectoryRMI dataRMI;
+    public Folder rootFolder;
+
+    public DataService(String url) {
         this.url = url;
     }
-    
-    public boolean Init(){
+
+    public boolean Init() {
         /*try {
-            this.usersRMI = (ClientAppDirectoryRMI) Naming.lookup(this.url);
+            this.dataRMI = (ClientAppDirectoryRMI) Naming.lookup(this.url);
             return true;
         } catch (IOException | NotBoundException e) {
             System.out.println("Unable to bind user service: " + e.getMessage());
             return false;
         }*/
-       return false;
+        return false;
     }
 
-    public Folder GetFolder(int id) throws RemoteException {
+    public Folder GetFolder(int id) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Folder QueryFolder(String args) throws RemoteException {
+    public Folder QueryFolder(String args) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public List<Document> GitDocument(int id) throws RemoteException {
+    public List<Document> GitDocument(int id) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean UpdateDirectoryPerms(int id, Permissions user, Permissions group, Permissions other) throws RemoteException {
+    public boolean UpdateDirectoryPerms(int id, Permissions user, Permissions group, Permissions other) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean RestoreDirectory(int id, int version) throws RemoteException {
+    public boolean RestoreDirectory(int id, int version) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    // Search method
+    private List<Document> searchForDocuments(String query) {
+        List<Document> result = new ArrayList<>();
+        searchFolder(rootFolder, query, result);
+        return result;
+    }
+
+    private void searchFolder(Folder folder, String query, List<Document> result) {
+        for (Directory dir : folder.children) {
+            if (dir instanceof Document) {
+                Document doc = (Document) dir;
+                if (matchesQuery(doc, query)) {
+                    result.add(doc);
+                }
+            } else if (dir instanceof Folder) {
+                searchFolder((Folder) dir, query, result);
+            }
+        }
+    }
+
+    private boolean matchesQuery(Document doc, String query) {
+        // Check if query matches name
+        if (doc.name != null && doc.name.toLowerCase().contains(query.toLowerCase())) {
+            return true;
+        }
+
+        // Check if query matches tags
+        for (String tag : doc.tags) {
+            if (tag != null && tag.toLowerCase().contains(query.toLowerCase())) {
+                return true;
+            }
+        }
+
+        // Check if query matches creation date (format it as you need)
+        if (doc.createdAt != null && doc.createdAt.toString().contains(query)) {
+            return true;
+        }
+
+        // Check if query matches last updated date (format it as you need)
+        if (doc.updatedAt != null && doc.updatedAt.toString().contains(query)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    String randomSize() {
+        return (100 + (int) (Math.random() * 900)) + " MB";
+    }
+
+    String randomPermissions() {
+        return "rw-r--r--";
+    }
+
+    Date createDate(int year, int month, int day) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            return sdf.parse(String.format("%d-%02d-%02d", year, month, day));
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            return new Date(); // Default to current date in case of error
+        }
+    }
+
+    public void loadFileSystemExample() {
+        // Create root folder
+        rootFolder = new Folder();
+        rootFolder.name = "Root";
+        rootFolder.path = "/root";
+        rootFolder.dirType = DirType.FILE;
+        rootFolder.permissions = randomPermissions();
+        rootFolder.size = "0 KB";
+        rootFolder.createdAt = createDate(2024, 1, 1);
+        rootFolder.updatedAt = new Date();
+        rootFolder.tags = new ArrayList<>();
+
+        // Create folders
+        Folder folder1 = new Folder();
+        folder1.name = "Folder 1";
+        folder1.path = "/root/Folder1";
+        folder1.dirType = DirType.FILE;
+        folder1.permissions = randomPermissions();
+        folder1.size = "0 KB";
+        folder1.createdAt = createDate(2024, 2, 1);
+        folder1.updatedAt = new Date();
+        folder1.tags = new ArrayList<>();
+
+        Folder folder2 = new Folder();
+        folder2.name = "Folder 2";
+        folder2.path = "/root/Folder2";
+        folder2.dirType = DirType.FILE;
+        folder2.permissions = randomPermissions();
+        folder2.size = "0 KB";
+        folder2.createdAt = createDate(2024, 3, 1);
+        folder2.updatedAt = new Date();
+        folder2.tags = new ArrayList<>();
+
+        Folder folder3 = new Folder();
+        folder3.name = "Folder 3";
+        folder3.path = "/root/Folder3";
+        folder3.dirType = DirType.FILE;
+        folder3.permissions = randomPermissions();
+        folder3.size = "0 KB";
+        folder3.createdAt = createDate(2024, 4, 1);
+        folder3.updatedAt = new Date();
+        folder3.tags = new ArrayList<>();
+
+        // Create files for folders
+        Document file1 = new Document();
+        file1.name = "File 1-1";
+        file1.path = "/root/Folder1/File1-1";
+        file1.dirType = DirType.FILE;
+        file1.permissions = randomPermissions();
+        file1.size = randomSize();
+        file1.createdAt = createDate(2024, 2, 10);
+        file1.updatedAt = new Date();
+        file1.tags = new ArrayList<>();
+
+        Document file2 = new Document();
+        file2.name = "File 2-1";
+        file2.path = "/root/Folder2/File2-1";
+        file2.dirType = DirType.FILE;
+        file2.permissions = randomPermissions();
+        file2.size = randomSize();
+        file2.createdAt = createDate(2024, 3, 10);
+        file2.updatedAt = new Date();
+        file2.tags = new ArrayList<>();
+
+        Document file3 = new Document();
+        file3.name = "File 3-1";
+        file3.path = "/root/Folder3/File3-1";
+        file3.dirType = DirType.FILE;
+        file3.permissions = randomPermissions();
+        file3.size = randomSize();
+        file3.createdAt = createDate(2024, 4, 10);
+        file3.updatedAt = new Date();
+        file3.tags = new ArrayList<>();
+
+        Document file4 = new Document();
+        file4.name = "File 3-2";
+        file4.path = "/root/Folder3/File3-2";
+        file4.dirType = DirType.FILE;
+        file4.permissions = randomPermissions();
+        file4.size = randomSize();
+        file4.createdAt = createDate(2024, 4, 15);
+        file4.updatedAt = new Date();
+        file4.tags = new ArrayList<>();
+
+        Document file5 = new Document();
+        file5.name = "File 3-3";
+        file5.path = "/root/Folder3/File3-3";
+        file5.dirType = DirType.FILE;
+        file5.permissions = randomPermissions();
+        file5.size = randomSize();
+        file5.createdAt = createDate(2024, 4, 5);
+        file5.updatedAt = new Date();
+        file5.tags = new ArrayList<>();
+        file5.tags.add("alpha");
+        file5.tags.add("beta");
+        file5.tags.add("gamma");
+        file5.tags.add("delta");
+        file5.tags.add("epsilon");
+
+        // Create a nested folder
+        Folder nestedFolder = new Folder();
+        nestedFolder.name = "Nested Folder";
+        nestedFolder.path = "/root/Folder3/NestedFolder";
+        nestedFolder.dirType = DirType.FILE;
+        nestedFolder.permissions = randomPermissions();
+        nestedFolder.size = "0 KB";
+        nestedFolder.createdAt = createDate(2024, 4, 20);
+        nestedFolder.updatedAt = new Date();
+        nestedFolder.tags = new ArrayList<>();
+        nestedFolder.AddDirectory(file4); // Add file to the nested folder
+
+        // Insert nested folder into folder 3
+        folder3.AddDirectory(nestedFolder);
+        folder3.AddDirectory(file3); // Add file to folder 3
+        folder3.AddDirectory(file5);
+
+        // Insert files into folders
+        folder1.AddDirectory(file1);
+        folder2.AddDirectory(file2);
+
+        // Insert folders into root
+        rootFolder.AddDirectory(folder1);
+        rootFolder.AddDirectory(folder2);
+        rootFolder.AddDirectory(folder3);
     }
 }

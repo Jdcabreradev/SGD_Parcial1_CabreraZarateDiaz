@@ -6,18 +6,22 @@ package com.upb.sgd.client.GUI;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.nio.file.ClosedDirectoryStreamException;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -25,13 +29,13 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import com.upb.sgd.client.GUI.Interface.AbstractGUIWindow;
 import com.upb.sgd.client.GUI.Utils.DocumentCellRenderer;
 import com.upb.sgd.client.Mediator.ClientMediator;
-import com.upb.sgd.shared.domain.DirType;
 import com.upb.sgd.shared.domain.Directory;
 import com.upb.sgd.shared.domain.Document;
 import com.upb.sgd.shared.domain.Folder;
@@ -45,7 +49,6 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
     private JFrame viewFrame;
     private JTree folderTree;
     private JList<Document> documentList;
-    private Folder rootFolder;
 
     public FileSystemBrowserWindow(ClientMediator mediator) {
         super(mediator);
@@ -53,43 +56,62 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
 
     @Override
     public void Init() {
-        // Create the main frame
-        viewFrame = new JFrame("File System Browser");
+        viewFrame = new JFrame("SGD - Browser");
         viewFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         viewFrame.setSize(800, 600);
         viewFrame.setLayout(new BorderLayout());
 
-        // Toolbar setup
         JToolBar toolBar = new JToolBar();
+
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(e -> {
+            RefreshFileSystemView();  // Method to refresh the file system view
+        });
+        toolBar.add(refreshButton);
+
+        // Toolbar
         JButton fileButton = new JButton("File");
         JMenu fileMenu = new JMenu("File");
         JMenuItem uploadItem = new JMenuItem("Upload");
         uploadItem.addActionListener(e -> {
-            // Upload logic here
-            System.out.println("Upload clicked");
+            UploadDocumentDialog();
         });
         fileMenu.add(uploadItem);
-        JPopupMenu popupMenu = new JPopupMenu();
-        popupMenu.add(fileMenu);
-        fileButton.addActionListener(e -> popupMenu.show(fileButton, 0, fileButton.getHeight()));
+
+        JPopupMenu filePopupMenu = new JPopupMenu();
+        filePopupMenu.add(fileMenu);
+        fileButton.addActionListener(e -> filePopupMenu.show(fileButton, 0, fileButton.getHeight()));
         toolBar.add(fileButton);
+
+        JButton folderButton = new JButton("Folder");
+        JMenu folderMenu = new JMenu("Folder");
+        JMenuItem newFolderItem = new JMenuItem("New Folder");
+        newFolderItem.addActionListener(e -> {
+            CreateNewFolder();
+        });
+        folderMenu.add(newFolderItem);
+
+        JPopupMenu folderPopupMenu = new JPopupMenu();
+        folderPopupMenu.add(folderMenu);
+        folderButton.addActionListener(e -> folderPopupMenu.show(folderButton, 0, folderButton.getHeight()));
+        toolBar.add(folderButton);
         viewFrame.add(toolBar, BorderLayout.NORTH);
 
-        // Left panel setup (folder tree)
+        // Folder tree
         JPanel leftPanel = new JPanel(new BorderLayout());
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootFolder);
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(this.mediator.dataService.rootFolder);
         folderTree = new JTree(rootNode);
         folderTree.addTreeSelectionListener(e -> {
             DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) folderTree.getLastSelectedPathComponent();
             if (selectedNode != null) {
                 Folder selectedFolder = (Folder) selectedNode.getUserObject();
-                updateDocumentList(selectedFolder);
+                UpdateDocumentList(selectedFolder);
             }
         });
         JScrollPane leftScrollPane = new JScrollPane(folderTree);
         leftPanel.add(leftScrollPane, BorderLayout.CENTER);
 
-        // Bottom search bar with button on left panel
+        // Search Bar
         JPanel leftBottomPanel = new JPanel(new BorderLayout());
         JTextField leftSearchField = new JTextField();
         JButton leftSearchButton = new JButton("Search");
@@ -97,28 +119,127 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         leftBottomPanel.add(leftSearchButton, BorderLayout.EAST);
         leftPanel.add(leftBottomPanel, BorderLayout.SOUTH);
 
-        // Right panel setup (document list)
+        // Document List
         JPanel rightPanel = new JPanel(new BorderLayout());
         documentList = new JList<>();
-        documentList.setCellRenderer(new DocumentCellRenderer()); // Set custom renderer
+        documentList.setCellRenderer(new DocumentCellRenderer());
+
+        // Document Interaction Menu
+        documentList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    int index = documentList.locationToIndex(e.getPoint());
+                    if (index != -1) {
+                        documentList.setSelectedIndex(index);
+                        JPopupMenu filePopupMenu = new JPopupMenu();
+
+                        // Download option
+                        JMenuItem downloadItem = new JMenuItem("Download");
+                        downloadItem.addActionListener(ev -> {
+                            Document selectedDocument = documentList.getSelectedValue();
+                            DownloadDocument(selectedDocument);
+                        });
+                        filePopupMenu.add(downloadItem);
+
+                        // Rename option
+                        JMenuItem renameItem = new JMenuItem("Rename");
+                        renameItem.addActionListener(ev -> {
+                            Document selectedDocument = documentList.getSelectedValue();
+                            RenameDirectoryDialog(selectedDocument);
+                        });
+                        filePopupMenu.add(renameItem);
+
+                        // Properties option
+                        JMenuItem propertiesItem = new JMenuItem("Properties");
+                        propertiesItem.addActionListener(ev -> {
+                            Document selectedDocument = documentList.getSelectedValue();
+                            ShowDirectoryProperties(selectedDocument);
+                        });
+                        filePopupMenu.add(propertiesItem);
+                        filePopupMenu.show(documentList, e.getX(), e.getY());
+                    }
+                }
+            }
+        });
+
         JScrollPane rightScrollPane = new JScrollPane(documentList);
         rightPanel.add(rightScrollPane, BorderLayout.CENTER);
-
-        // Split pane to separate left and right panels
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
         viewFrame.add(splitPane, BorderLayout.CENTER);
 
-        // Footer setup (Placeholder for notifications)
+        // Notifications
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel notificationLabel = new JLabel("Notifications will be displayed here.");
         footerPanel.add(notificationLabel);
         viewFrame.add(footerPanel, BorderLayout.SOUTH);
-
-        // Show the frame
         viewFrame.setVisible(true);
 
         // Load file system data into the view
-        loadFileSystemExample();
+        this.mediator.dataService.loadFileSystemExample();
+        this.UpdateFolderTree(this.mediator.dataService.rootFolder);
+        this.UpdateDocumentList(this.mediator.dataService.rootFolder);
+    }
+
+    private void UploadDocumentDialog() {
+        JDialog uploadDialog = new JDialog(viewFrame, "Upload Document", true);
+        uploadDialog.setSize(400, 300);
+        uploadDialog.setLayout(new BorderLayout());
+
+        // Document picker
+        JButton chooseFileButton = new JButton("Choose File");
+        JTextField selectedFilePath = new JTextField(20);
+        chooseFileButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            int returnValue = fileChooser.showOpenDialog(viewFrame);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                selectedFilePath.setText(selectedFile.getAbsolutePath());
+            }
+        });
+
+        JPanel filePanel = new JPanel();
+        filePanel.add(chooseFileButton);
+        filePanel.add(selectedFilePath);
+
+        JTextField documentNameField = new JTextField(20);
+        JTextField permissionsField = new JTextField(20);
+        JTextField tagsField = new JTextField(20);
+
+        JPanel attributesPanel = new JPanel(new GridLayout(3, 2));
+        attributesPanel.add(new JLabel("Document Name:"));
+        attributesPanel.add(documentNameField);
+        attributesPanel.add(new JLabel("Permissions:"));
+        attributesPanel.add(permissionsField);
+        attributesPanel.add(new JLabel("Tags:"));
+        attributesPanel.add(tagsField);
+
+        JButton uploadButton = new JButton("Upload");
+        uploadButton.addActionListener(e -> {
+            String documentName = documentNameField.getText();
+            String permissions = permissionsField.getText();
+            String tags = tagsField.getText();
+            String filePath = selectedFilePath.getText();
+
+            if (!filePath.isEmpty()) {
+                // Logic
+                System.out.println("Uploading document: " + documentName + " | Permissions: " + permissions + " | Tags: " + tags + " | File: " + filePath);
+                uploadDialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(uploadDialog, "Please choose a file to upload.");
+            }
+        });
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(uploadButton);
+
+        // Add panels to the dialog
+        uploadDialog.add(filePanel, BorderLayout.NORTH);
+        uploadDialog.add(attributesPanel, BorderLayout.CENTER);
+        uploadDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Show the dialog
+        uploadDialog.setVisible(true);
     }
 
     @Override
@@ -126,167 +247,50 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         this.viewFrame.dispose();
     }
 
-    // Helper method to generate random size and permissions
-    String randomSize() {
-        return (100 + (int) (Math.random() * 900)) + " MB";
-    }
+    private void ShowDirectoryProperties(Directory directory) {
+        if (directory != null) {
+            var tagString = "";
+            for (String tag : directory.tags) {
+                if("".equals(tagString)) tagString += tag;
+                else tagString += ", " + tag;
+            }
 
-    String randomPermissions() {
-        return "rw-r--r--";
-    }
-
-    Date createDate(int year, int month, int day) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            return sdf.parse(String.format("%d-%02d-%02d", year, month, day));
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            return new Date(); // Default to current date in case of error
+            JOptionPane.showMessageDialog(viewFrame,
+                    "Name: " + directory.name + "\n"
+                    + "Size: " + directory.size + "\n"
+                    + "Created: " + directory.createdAt.toString() + "\n"
+                    + "Permissions: " + directory.permissions + "\n"
+                    + "Tags: " + tagString,
+                    "Properties", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    private void loadFileSystemExample() {
-        // Create root folder
-        rootFolder = new Folder();
-        rootFolder.name = "Root";
-        rootFolder.path = "/root";
-        rootFolder.dirType = DirType.FILE;
-        rootFolder.permissions = randomPermissions();
-        rootFolder.size = "0 KB";
-        rootFolder.createdAt = createDate(2024, 1, 1);
-        rootFolder.updatedAt = new Date();
-        rootFolder.tags = new ArrayList<>();
-
-        // Create folders
-        Folder folder1 = new Folder();
-        folder1.name = "Folder 1";
-        folder1.path = "/root/Folder1";
-        folder1.dirType = DirType.FILE;
-        folder1.permissions = randomPermissions();
-        folder1.size = "0 KB";
-        folder1.createdAt = createDate(2024, 2, 1);
-        folder1.updatedAt = new Date();
-        folder1.tags = new ArrayList<>();
-
-        Folder folder2 = new Folder();
-        folder2.name = "Folder 2";
-        folder2.path = "/root/Folder2";
-        folder2.dirType = DirType.FILE;
-        folder2.permissions = randomPermissions();
-        folder2.size = "0 KB";
-        folder2.createdAt = createDate(2024, 3, 1);
-        folder2.updatedAt = new Date();
-        folder2.tags = new ArrayList<>();
-
-        Folder folder3 = new Folder();
-        folder3.name = "Folder 3";
-        folder3.path = "/root/Folder3";
-        folder3.dirType = DirType.FILE;
-        folder3.permissions = randomPermissions();
-        folder3.size = "0 KB";
-        folder3.createdAt = createDate(2024, 4, 1);
-        folder3.updatedAt = new Date();
-        folder3.tags = new ArrayList<>();
-
-        // Create files for folders
-        Document file1 = new Document();
-        file1.name = "File 1-1";
-        file1.path = "/root/Folder1/File1-1";
-        file1.dirType = DirType.FILE;
-        file1.permissions = randomPermissions();
-        file1.size = randomSize();
-        file1.createdAt = createDate(2024, 2, 10);
-        file1.updatedAt = new Date();
-        file1.tags = new ArrayList<>();
-
-        Document file2 = new Document();
-        file2.name = "File 2-1";
-        file2.path = "/root/Folder2/File2-1";
-        file2.dirType = DirType.FILE;
-        file2.permissions = randomPermissions();
-        file2.size = randomSize();
-        file2.createdAt = createDate(2024, 3, 10);
-        file2.updatedAt = new Date();
-        file2.tags = new ArrayList<>();
-
-        Document file3 = new Document();
-        file3.name = "File 3-1";
-        file3.path = "/root/Folder3/File3-1";
-        file3.dirType = DirType.FILE;
-        file3.permissions = randomPermissions();
-        file3.size = randomSize();
-        file3.createdAt = createDate(2024, 4, 10);
-        file3.updatedAt = new Date();
-        file3.tags = new ArrayList<>();
-
-        Document file4 = new Document();
-        file4.name = "File 3-2";
-        file4.path = "/root/Folder3/File3-2";
-        file4.dirType = DirType.FILE;
-        file4.permissions = randomPermissions();
-        file4.size = randomSize();
-        file4.createdAt = createDate(2024, 4, 15);
-        file4.updatedAt = new Date();
-        file4.tags = new ArrayList<>();
-
-        Document file5 = new Document();
-        file5.name = "File 3-3";
-        file5.path = "/root/Folder3/File3-3";
-        file5.dirType = DirType.FILE;
-        file5.permissions = randomPermissions();
-        file5.size = randomSize();
-        file5.createdAt = createDate(2024, 4, 5);
-        file5.updatedAt = new Date();
-        file5.tags = new ArrayList<>();
-
-        // Create a nested folder
-        Folder nestedFolder = new Folder();
-        nestedFolder.name = "Nested Folder";
-        nestedFolder.path = "/root/Folder3/NestedFolder";
-        nestedFolder.dirType = DirType.FILE;
-        nestedFolder.permissions = randomPermissions();
-        nestedFolder.size = "0 KB";
-        nestedFolder.createdAt = createDate(2024, 4, 20);
-        nestedFolder.updatedAt = new Date();
-        nestedFolder.tags = new ArrayList<>();
-        nestedFolder.AddDirectory(file4); // Add file to the nested folder
-
-        // Insert nested folder into folder 3
-        folder3.AddDirectory(nestedFolder);
-        folder3.AddDirectory(file3); // Add file to folder 3
-        folder3.AddDirectory(file5);
-
-        // Insert files into folders
-        folder1.AddDirectory(file1);
-        folder2.AddDirectory(file2);
-
-        // Insert folders into root
-        rootFolder.AddDirectory(folder1);
-        rootFolder.AddDirectory(folder2);
-        rootFolder.AddDirectory(folder3);
-
-        // Update GUI components with the file system data
-        updateFolderTree(rootFolder);
-        updateDocumentList(rootFolder);
-    }
-
-    private void updateFolderTree(Folder folder) {
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(folder);
-        populateFolderTree(rootNode, folder);
-        folderTree.setModel(new DefaultTreeModel(rootNode));
-    }
-
-    private void populateFolderTree(DefaultMutableTreeNode parentNode, Folder folder) {
-        for (Directory child : folder.children) {
-            DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(child);
-            parentNode.add(childNode);
-            if (child instanceof Folder tmpFolder) {
-                populateFolderTree(childNode, tmpFolder);
+    private void RenameDirectoryDialog(Directory directory) {
+        if (directory != null) {
+            String newName = JOptionPane.showInputDialog(viewFrame, "Enter new name:", directory.name);
+            if (newName != null && !newName.trim().isEmpty()) {
+                //Logic
             }
         }
     }
 
-    private void updateDocumentList(Folder folder) {
+    private void UpdateFolderTree(Folder folder) {
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(folder);
+        PopulateFolderTree(rootNode, folder);
+        folderTree.setModel(new DefaultTreeModel(rootNode));
+    }
+
+    private void PopulateFolderTree(DefaultMutableTreeNode parentNode, Folder folder) {
+        for (Directory child : folder.children) {
+            DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(child);
+            parentNode.add(childNode);
+            if (child instanceof Folder tmpFolder) {
+                PopulateFolderTree(childNode, tmpFolder);
+            }
+        }
+    }
+
+    private void UpdateDocumentList(Folder folder) {
         DefaultListModel<Document> listModel = new DefaultListModel<>();
         if (folder != null) {
             for (Directory dir : folder.children) {
@@ -297,4 +301,29 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         }
         documentList.setModel(listModel);
     }
+
+    private void DownloadDocument(Document document) {
+        System.out.println(document.name);
+    }
+
+    private void CreateNewFolder() {
+        JDialog newFolderDialog = new JDialog(viewFrame, "Create Folder", true);
+        newFolderDialog.setSize(400, 300);
+        newFolderDialog.setLayout(new BorderLayout());
+
+        JPanel folderPanel = new JPanel();
+        JTextField foldername = new JTextField(20);
+
+        folderPanel.add(foldername, BorderLayout.CENTER);
+
+        JButton uploadButton = new JButton("Create");
+        uploadButton.addActionListener(e -> {
+            
+        });
+
+        newFolderDialog.add(folderPanel);
+        newFolderDialog.setVisible(true);
+    }
+
+    private void RefreshFileSystemView(){}
 }
