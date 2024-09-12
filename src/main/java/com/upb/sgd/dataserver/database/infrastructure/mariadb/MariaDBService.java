@@ -10,6 +10,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class MariaDBService implements DatabaseServicePort {
 
@@ -117,15 +118,13 @@ public class MariaDBService implements DatabaseServicePort {
         int group = resultSet.getInt("group_id");
         Integer parent = resultSet.getObject("parent", Integer.class); // Maneja el caso nulo
         String path = resultSet.getString("path");
-        DirType dirType = DirType.valueOf(resultSet.getString("dirType"));
+        DirType dirType = Objects.equals(resultSet.getString("dirType"), "FILE") ? DirType.FILE:DirType.DIRECTORY;
         String permissions = resultSet.getString("permissions");
         String size = resultSet.getString("size");
         String contentType = resultSet.getString("contentType");
         Date createdAt = resultSet.getDate("createdAt");
         Date updatedAt = resultSet.getDate("updatedAt");
         List<String> tags = getTagsForDirectory(id);
-
-        Directory directory;
 
         if (dirType == DirType.DIRECTORY) {
             Folder folder = new Folder();

@@ -45,7 +45,7 @@ public class AppDataService extends UnicastRemoteObject implements ClientAppDire
     }
 
     @Override
-    public Directory addDirectory(Directory directory, Path path) throws RemoteException {
+    public Directory addDirectory(Directory directory, String path) throws RemoteException {
         return this.dataService.addDirectory(directory, path);
     }
 }

@@ -54,7 +54,7 @@ public class DataService {
         }
     }
 
-    public void UploadFile(Directory file, Path path){
+    public void UploadFile(Directory file, String path){
         try {
             this.dataRMI.addDirectory(file,path);
         } catch (RemoteException e) {

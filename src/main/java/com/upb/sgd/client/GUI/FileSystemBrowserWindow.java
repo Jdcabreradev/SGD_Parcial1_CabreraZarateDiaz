@@ -218,7 +218,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                 } catch (IOException ex) {
                     System.out.println("unable to find uploadFile path");
                 }
-                this.mediator.dataService.UploadFile(uploadDoc,this.mediator.dataService.currentFolder.getPath());
+                this.mediator.dataService.UploadFile(uploadDoc,this.mediator.dataService.currentFolder.getPath().toString());
             }
         });
 
