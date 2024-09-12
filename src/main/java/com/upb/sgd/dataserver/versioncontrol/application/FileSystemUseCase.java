@@ -135,4 +135,8 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
         return false;
     }
 
+    @Override
+    public Document downloadFile(Document document) {
+        return null;
+    }
 }

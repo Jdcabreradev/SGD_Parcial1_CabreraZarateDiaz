@@ -28,10 +28,25 @@ public class FileUtils {
         return baseName + toInsert + extension;
     }
 
+    // Método para convertir el tamaño del archivo a MB con máximo 5 caracteres
     public static String getFileSizeInMB(Path filePath) throws IOException {
         long bytes = Files.size(filePath);
         double megabytes = bytes / (1024.0 * 1024.0);
-        DecimalFormat df = new DecimalFormat("#.##"); // Formatear a dos decimales
-        return df.format(megabytes) + " MB";
+
+        DecimalFormat df;
+        if (megabytes < 10) {
+            df = new DecimalFormat("0.00"); // 2 decimales para valores menores a 10 MB
+        } else {
+            df = new DecimalFormat("0.0");  // 1 decimal para valores mayores o iguales a 10 MB
+        }
+
+        String formattedSize = df.format(megabytes) + " MB";
+
+        // Asegurar que no exceda los 5 caracteres
+        if (formattedSize.length() > 5) {
+            formattedSize = formattedSize.substring(0, 5);
+        }
+
+        return formattedSize;
     }
 }
