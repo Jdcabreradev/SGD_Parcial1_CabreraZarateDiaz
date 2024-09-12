@@ -5,8 +5,10 @@
 package com.upb.sgd.client.RMI;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,6 +51,14 @@ public class DataService {
             this.rootFolder = this.dataRMI.getRoot();
         } catch (IOException e) {
             System.out.println("Unable to retrieve remote root");
+        }
+    }
+
+    public void UploadFile(Directory file, Path path){
+        try {
+            this.dataRMI.addDirectory(file,path);
+        } catch (RemoteException e) {
+            System.out.println("Unable to upload file");
         }
     }
 

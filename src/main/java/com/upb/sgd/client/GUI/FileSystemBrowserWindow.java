@@ -10,6 +10,8 @@ import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -38,6 +40,7 @@ import com.upb.sgd.client.Mediator.ClientMediator;
 import com.upb.sgd.shared.domain.Directory;
 import com.upb.sgd.shared.domain.Document;
 import com.upb.sgd.shared.domain.Folder;
+import com.upb.sgd.utils.FileUtils;
 
 /**
  *
@@ -207,6 +210,15 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
             if (returnValue == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 selectedFilePath.setText(selectedFile.getAbsolutePath());
+                Document uploadDoc = new Document();
+                uploadDoc.name = selectedFile.getName();
+                uploadDoc.path = selectedFilePath.getName();
+                try {
+                    uploadDoc.fileData = FileUtils.readFileToByteArray(Paths.get(selectedFile.getAbsolutePath()));
+                } catch (IOException ex) {
+                    System.out.println("unable to find uploadFile path");
+                }
+                this.mediator.dataService.UploadFile(uploadDoc,this.mediator.dataService.currentFolder.getPath());
             }
         });
 
