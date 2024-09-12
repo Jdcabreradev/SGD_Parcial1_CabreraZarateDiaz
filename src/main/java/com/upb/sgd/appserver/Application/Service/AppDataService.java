@@ -6,13 +6,13 @@
 package com.upb.sgd.appserver.Application.Service;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import com.upb.sgd.shared.domain.Directory;
+import com.upb.sgd.shared.domain.Document;
 import com.upb.sgd.shared.domain.Folder;
 import com.upb.sgd.shared.infrastructure.rmi.appdata.AppDataRMI;
 import com.upb.sgd.shared.infrastructure.rmi.clientapp.ClientAppDirectoryRMI;
@@ -47,5 +47,10 @@ public class AppDataService extends UnicastRemoteObject implements ClientAppDire
     @Override
     public Directory addDirectory(Directory directory, String path) throws RemoteException {
         return this.dataService.addDirectory(directory, path);
+    }
+
+    @Override
+    public Document downladFile(Document document,String path) throws RemoteException {
+        return this.dataService.downloadFile(document,path);
     }
 }

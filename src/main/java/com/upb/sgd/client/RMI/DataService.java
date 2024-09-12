@@ -62,6 +62,15 @@ public class DataService {
         }
     }
 
+    public Document DownloadFile(Document document, String path){
+        try {
+            return this.dataRMI.downladFile(document,path);
+        } catch (RemoteException e) {
+            System.out.println("no se pudo descargar el archivo");
+            return  document;
+        }
+    }
+
     public Folder SearchForDocuments(String query) {
         Folder result = new Folder();
         result.name = "Query";
