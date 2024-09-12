@@ -9,6 +9,7 @@ import com.upb.sgd.client.GUI.Interface.GUIWindow;
 import com.upb.sgd.client.GUI.LoginWindow;
 import com.upb.sgd.client.RMI.DataService;
 import com.upb.sgd.client.RMI.UserService;
+import com.upb.sgd.client.Socket.ClientProcess;
 import com.upb.sgd.shared.domain.User;
 
 /**
@@ -20,6 +21,7 @@ public class ClientMediator {
     public DataService dataService;
     public User loggedUser;
     private GUIWindow currentWindow;
+    private ClientProcess clientProcess;
 
     public void Init(){
         this.userService = new UserService("rmi://localhost:1802/appserver/user");
@@ -27,6 +29,9 @@ public class ClientMediator {
 
         this.dataService = new DataService("rmi://localhost:1802/appserver/data");
         this.dataService.Init();
+
+        this.clientProcess = new ClientProcess(1803,this);
+        this.clientProcess.Init();
         
         this.currentWindow = new LoginWindow(this);
         this.currentWindow.Init();

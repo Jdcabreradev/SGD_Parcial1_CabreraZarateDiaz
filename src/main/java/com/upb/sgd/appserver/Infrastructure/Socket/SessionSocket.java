@@ -6,6 +6,7 @@
 package com.upb.sgd.appserver.Infrastructure.Socket;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -19,21 +20,21 @@ public class SessionSocket {
     public Socket socket;
     public volatile boolean running = true;
 
-    //private final InputStream inputStream;
+    private final InputStream inputStream;
     private final OutputStream outputStream;  
     private final ServerProcess serverProcess;
 
     public SessionSocket(Socket socket, Integer sessionId, ServerProcess serverProcess) throws IOException {
         this.socket = socket;
         this.sessionId = sessionId;
-        //this.inputStream = socket.getInputStream();
+        this.inputStream = socket.getInputStream();
         this.outputStream = socket.getOutputStream();
         this.serverProcess = serverProcess;
     }
 
-    /*public void Init() {
+    public void Init() {
         new Thread(this::ReadThread).start();
-    }*/
+    }
 
     public boolean Close() {
         try {
@@ -44,38 +45,35 @@ public class SessionSocket {
         }
     }
 
-    /*public void Read() throws IOException {
+    public void Read() throws IOException {
         while (this.running) {
             byte[] lengthBuffer = new byte[4];
             inputStream.read(lengthBuffer);
-            //order(ByteOrder.LITTLE_ENDIAN).
             int messageLength = ByteBuffer.wrap(lengthBuffer).getInt();
 
             if (messageLength > 0) {
                 byte[] buffer = new byte[messageLength];
                 inputStream.read(buffer, 0, messageLength);
 
-                router.Route(this.sessionId, buffer);
+                this.serverProcess.Broadcast(buffer);
             } else {
-                Logger.Log(LoggerLevel.Warning, name, "Forcefully disconnected");
-                this.router.Route(sessionId, "{\"route\":\"Disconnect\", \"data\": \"\"}".getBytes(StandardCharsets.UTF_8));
+                System.out.println("Forcefully disconnected");
                 this.running = false;
             }
         }
 
         this.Close();
-    }*/
+    }
 
-    /*private void ReadThread() {
+    private void ReadThread() {
         try {
-            Logger.Log(LoggerLevel.Info, name, "Read thread started");
+            System.out.println("Read thread started");
             Read();
         } catch (IOException e) {
-            Logger.Log(LoggerLevel.Error, name, "Error while reading data: " + e.getMessage());
-            this.router.Route(sessionId, "{\"route\":\"Disconnect\", \"data\": \"\"}".getBytes(StandardCharsets.UTF_8));
+            System.err.println("Error while reading data: " + e.getMessage());
             Close();
         }
-    }*/
+    }
 
     public void Write(byte[] data) {
         try {
