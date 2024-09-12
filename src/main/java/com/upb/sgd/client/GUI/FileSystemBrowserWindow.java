@@ -150,7 +150,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         rootFolder = new Folder();
         rootFolder.name = "Root";
         rootFolder.path = "/root";
-        rootFolder.dirType = DirType.FOLDER;
+        rootFolder.dirType = DirType.FILE;
         rootFolder.permissions = randomPermissions();
         rootFolder.size = "0 KB";
         rootFolder.createdAt = createDate(2024, 1, 1);
@@ -161,7 +161,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         Folder folder1 = new Folder();
         folder1.name = "Folder 1";
         folder1.path = "/root/Folder1";
-        folder1.dirType = DirType.FOLDER;
+        folder1.dirType = DirType.FILE;
         folder1.permissions = randomPermissions();
         folder1.size = "0 KB";
         folder1.createdAt = createDate(2024, 2, 1);
@@ -171,7 +171,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         Folder folder2 = new Folder();
         folder2.name = "Folder 2";
         folder2.path = "/root/Folder2";
-        folder2.dirType = DirType.FOLDER;
+        folder2.dirType = DirType.FILE;
         folder2.permissions = randomPermissions();
         folder2.size = "0 KB";
         folder2.createdAt = createDate(2024, 3, 1);
@@ -181,7 +181,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         Folder folder3 = new Folder();
         folder3.name = "Folder 3";
         folder3.path = "/root/Folder3";
-        folder3.dirType = DirType.FOLDER;
+        folder3.dirType = DirType.FILE;
         folder3.permissions = randomPermissions();
         folder3.size = "0 KB";
         folder3.createdAt = createDate(2024, 4, 1);
@@ -243,27 +243,27 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         Folder nestedFolder = new Folder();
         nestedFolder.name = "Nested Folder";
         nestedFolder.path = "/root/Folder3/NestedFolder";
-        nestedFolder.dirType = DirType.FOLDER;
+        nestedFolder.dirType = DirType.FILE;
         nestedFolder.permissions = randomPermissions();
         nestedFolder.size = "0 KB";
         nestedFolder.createdAt = createDate(2024, 4, 20);
         nestedFolder.updatedAt = new Date();
         nestedFolder.tags = new ArrayList<>();
-        nestedFolder.insert(file4); // Add file to the nested folder
+        nestedFolder.AddDirectory(file4); // Add file to the nested folder
 
         // Insert nested folder into folder 3
-        folder3.insert(nestedFolder);
-        folder3.insert(file3); // Add file to folder 3
-        folder3.insert(file5);
+        folder3.AddDirectory(nestedFolder);
+        folder3.AddDirectory(file3); // Add file to folder 3
+        folder3.AddDirectory(file5);
 
         // Insert files into folders
-        folder1.insert(file1);
-        folder2.insert(file2);
+        folder1.AddDirectory(file1);
+        folder2.AddDirectory(file2);
 
         // Insert folders into root
-        rootFolder.insert(folder1);
-        rootFolder.insert(folder2);
-        rootFolder.insert(folder3);
+        rootFolder.AddDirectory(folder1);
+        rootFolder.AddDirectory(folder2);
+        rootFolder.AddDirectory(folder3);
 
         // Update GUI components with the file system data
         updateFolderTree(rootFolder);
@@ -277,7 +277,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
     }
 
     private void populateFolderTree(DefaultMutableTreeNode parentNode, Folder folder) {
-        for (Directory child : folder.listChildren()) {
+        for (Directory child : folder.children) {
             DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(child);
             parentNode.add(childNode);
             if (child instanceof Folder tmpFolder) {
@@ -289,7 +289,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
     private void updateDocumentList(Folder folder) {
         DefaultListModel<Document> listModel = new DefaultListModel<>();
         if (folder != null) {
-            for (Directory dir : folder.listChildren()) {
+            for (Directory dir : folder.children) {
                 if (dir instanceof Document document) {
                     listModel.addElement(document);
                 }
