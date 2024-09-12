@@ -95,7 +95,7 @@ public class MariaDBProvider implements UserDBProvider {
                 u.Id = rsUser.getInt("Id");
                 u.username = rsUser.getString("username");
                 u.password = rsUser.getString("password");
-
+                u.isAdmin = rsUser.getInt("isAdmin") == 1;
                 stmtGroups.setInt(1, u.Id);
                 ResultSet rsGroups = stmtGroups.executeQuery();
                 List<Integer> groupIds = new ArrayList<>();
