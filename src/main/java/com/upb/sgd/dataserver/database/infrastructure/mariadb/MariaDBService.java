@@ -48,11 +48,17 @@ public class MariaDBService implements DatabaseServicePort {
         String insertQuery = "INSERT INTO Directory (name, owner, group_id, parent, dirType, permissions, size, contentType, path) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement statement = connection.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS)) {
+        String insertTagQuery = "INSERT INTO Tag (name) VALUES (?) ON DUPLICATE KEY UPDATE id=id"; // Evita duplicados
+        String insertDirectoryTagQuery = "INSERT INTO DirectoryTag (directory_id, tag_id) VALUES (?, ?)";
+
+        try (PreparedStatement statement = connection.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement tagStatement = connection.prepareStatement(insertTagQuery, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement directoryTagStatement = connection.prepareStatement(insertDirectoryTagQuery)) {
+
             statement.setString(1, directory.name);
             statement.setInt(2, directory.owner);
             statement.setInt(3, directory.group);
-            statement.setObject(4, directory.parent == 0 ? null : directory.parent);
+            statement.setObject(4, directory.parent == 0 ? null : directory.parent);  // Manejar null si no hay padre
             statement.setString(5, directory.dirType.name());
             statement.setString(6, directory.permissions);
             statement.setString(7, directory.size);
@@ -60,14 +66,44 @@ public class MariaDBService implements DatabaseServicePort {
             statement.setString(9, directory.path);
 
             int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("Creating directory failed, no rows affected.");
+            }
 
             ResultSet resultSet = statement.getGeneratedKeys();
             if (resultSet.next()) {
                 directory.id = resultSet.getInt(1);
-                return directory;
+            } else {
+                throw new SQLException("Creating directory failed, no ID obtained.");
             }
+
+            for (String tag : directory.tags) {
+                int tagId = 0;
+
+                tagStatement.setString(1, tag);
+                tagStatement.executeUpdate();
+                ResultSet tagResultSet = tagStatement.getGeneratedKeys();
+                if (tagResultSet.next()) {
+                    tagId = tagResultSet.getInt(1);  // Si el tag es nuevo
+                } else {
+                    PreparedStatement getTagIdStatement = connection.prepareStatement("SELECT id FROM Tag WHERE name = ?");
+                    getTagIdStatement.setString(1, tag);
+                    ResultSet tagIdResult = getTagIdStatement.executeQuery();
+                    if (tagIdResult.next()) {
+                        tagId = tagIdResult.getInt(1);
+                    }
+                }
+
+                directoryTagStatement.setInt(1, directory.id);
+                directoryTagStatement.setInt(2, tagId);
+                directoryTagStatement.executeUpdate();
+            }
+
+            return directory;
+
         } catch (SQLException e) {
-            System.out.println("[MARIADB] Error al crear el directory " + directory.name + ": " + e);
+            System.out.println("[MARIADB] Error al crear el directorio " + directory.name + " o asociar tags: " + e);
+            e.printStackTrace();
         }
         return null;
     }
@@ -168,14 +204,19 @@ public class MariaDBService implements DatabaseServicePort {
         String query = "SELECT t.name FROM Tag t " +
                 "JOIN DirectoryTag dt ON t.id = dt.tag_id " +
                 "WHERE dt.directory_id = ?";
+
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, directoryId);
             ResultSet resultSet = statement.executeQuery();
+
             while (resultSet.next()) {
-                tags.add(resultSet.getString("name"));
+                String tagName = resultSet.getString("name");
+                if (tagName != null && !tagName.isEmpty()) {
+                    tags.add(tagName);
+                }
             }
         } catch (SQLException e) {
-            System.out.println("[MARIADB] Error al obtener los tags para el directorio " + directoryId + ": " + e);
+            System.out.println("[MARIADB] Error al obtener los tags para el directorio " + directoryId + ": " + e.getMessage());
         }
         return tags;
     }

@@ -3,6 +3,7 @@ package com.upb.sgd.utils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 
 public class FileUtils {
 
@@ -25,5 +26,12 @@ public class FileUtils {
         String extension = original.substring(dotIndex);
 
         return baseName + toInsert + extension;
+    }
+
+    public static String getFileSizeInMB(Path filePath) throws IOException {
+        long bytes = Files.size(filePath);
+        double megabytes = bytes / (1024.0 * 1024.0);
+        DecimalFormat df = new DecimalFormat("#.##"); // Formatear a dos decimales
+        return df.format(megabytes) + " MB";
     }
 }
