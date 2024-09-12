@@ -159,20 +159,19 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                         });
                         filePopupMenu.add(downloadItem);
 
-                        // Rename option
-                        JMenuItem renameItem = new JMenuItem("Rename");
-                        renameItem.addActionListener(ev -> {
-                            Document selectedDocument = documentList.getSelectedValue();
-                            RenameDirectoryDialog(selectedDocument);
-                        });
-                        filePopupMenu.add(renameItem);
-
                         // Properties option
                         JMenuItem propertiesItem = new JMenuItem("Properties");
                         propertiesItem.addActionListener(ev -> {
                             Document selectedDocument = documentList.getSelectedValue();
                             ShowDirectoryProperties(selectedDocument);
                         });
+
+                        JMenuItem updateItem = new JMenuItem("Update");
+                        updateItem.addActionListener(ea -> {
+                            UpdateDocumentDialog();
+                        });
+                        filePopupMenu.add(updateItem);
+
                         filePopupMenu.add(propertiesItem);
                         filePopupMenu.show(documentList, e.getX(), e.getY());
                     }
@@ -212,15 +211,6 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
             if (returnValue == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 selectedFilePath.setText(selectedFile.getAbsolutePath());
-                Document uploadDoc = new Document();
-                uploadDoc.name = selectedFile.getName();
-                uploadDoc.path = selectedFilePath.getName();
-                try {
-                    uploadDoc.fileData = FileUtils.readFileToByteArray(Paths.get(selectedFile.getAbsolutePath()));
-                } catch (IOException ex) {
-                    System.out.println("unable to find uploadFile path");
-                }
-                this.mediator.dataService.UploadFile(uploadDoc,this.mediator.dataService.currentFolder.getPath().toString());
             }
         });
 
@@ -233,8 +223,8 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         JTextField tagsField = new JTextField(20);
 
         JPanel attributesPanel = new JPanel(new GridLayout(3, 2));
-        attributesPanel.add(new JLabel("Document Name:"));
-        attributesPanel.add(documentNameField);
+        //attributesPanel.add(new JLabel("Document Name:"));
+        //attributesPanel.add(documentNameField);
         attributesPanel.add(new JLabel("Permissions:"));
         attributesPanel.add(permissionsField);
         attributesPanel.add(new JLabel("Tags:"));
@@ -252,6 +242,8 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                 File tempFile = new File(filePath);
                 Document uploadDoc = new Document();
                 uploadDoc.name = tempFile.getName();
+                uploadDoc.owner = this.mediator.loggedUser.Id;
+                uploadDoc.group = this.mediator.loggedUser.groupPermIds.getFirst();
                 uploadDoc.path = tempFile.getName();
                 uploadDoc.tags = Arrays.asList(tags.split(","));
                 uploadDoc.permissions = permissions;
@@ -263,6 +255,78 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                 }
                 this.mediator.dataService.UploadFile(uploadDoc,this.mediator.dataService.currentFolder.getPath().toString());
                 System.out.println("Uploading document: " + documentName + " | Permissions: " + permissions + " | Tags: " + tags + " | File: " + filePath);
+                uploadDialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(uploadDialog, "Please choose a file to upload.");
+            }
+        });
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(uploadButton);
+
+        // Add panels to the dialog
+        uploadDialog.add(filePanel, BorderLayout.NORTH);
+        uploadDialog.add(attributesPanel, BorderLayout.CENTER);
+        uploadDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Show the dialog
+        uploadDialog.setVisible(true);
+    }
+
+    private void UpdateDocumentDialog() {
+        JDialog uploadDialog = new JDialog(viewFrame, "Update Document", true);
+        uploadDialog.setSize(400, 300);
+        uploadDialog.setLayout(new BorderLayout());
+
+        // Document picker
+        JButton chooseFileButton = new JButton("Choose File");
+        JTextField selectedFilePath = new JTextField(20);
+        chooseFileButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            int returnValue = fileChooser.showOpenDialog(viewFrame);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                selectedFilePath.setText(selectedFile.getAbsolutePath());
+            }
+        });
+
+        JPanel filePanel = new JPanel();
+        filePanel.add(chooseFileButton);
+        filePanel.add(selectedFilePath);
+
+        JTextField permissionsField = new JTextField(20);
+        JTextField tagsField = new JTextField(20);
+
+        JPanel attributesPanel = new JPanel(new GridLayout(3, 2));
+        attributesPanel.add(new JLabel("Permissions:"));
+        attributesPanel.add(permissionsField);
+        attributesPanel.add(new JLabel("Tags:"));
+        attributesPanel.add(tagsField);
+
+        JButton uploadButton = new JButton("Update");
+        uploadButton.addActionListener(e -> {
+            String permissions = permissionsField.getText();
+            String tags = tagsField.getText();
+            String filePath = selectedFilePath.getText();
+
+            if (!filePath.isEmpty()) {
+                // Logic
+                File tempFile = new File(filePath);
+                Document uploadDoc = new Document();
+                uploadDoc.name = tempFile.getName();
+                uploadDoc.owner = this.mediator.loggedUser.Id;
+                uploadDoc.group = this.mediator.loggedUser.groupPermIds.getFirst();
+                uploadDoc.path = tempFile.getName();
+                uploadDoc.tags = Arrays.asList(tags.split(","));
+                uploadDoc.permissions = permissions;
+                uploadDoc.contentType = tempFile.getName().substring(tempFile.getName().lastIndexOf('.'));
+                try {
+                    uploadDoc.fileData = FileUtils.readFileToByteArray(Paths.get(tempFile.getAbsolutePath()));
+                } catch (IOException ex) {
+                    System.out.println("unable to find uploadFile path");
+                }
+                this.mediator.dataService.UploadFile(uploadDoc,this.mediator.dataService.currentFolder.getPath().toString());
+                System.out.println("Updating document");
                 uploadDialog.dispose();
             } else {
                 JOptionPane.showMessageDialog(uploadDialog, "Please choose a file to upload.");
