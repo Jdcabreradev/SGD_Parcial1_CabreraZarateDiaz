@@ -242,7 +242,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                 File tempFile = new File(filePath);
                 Document uploadDoc = new Document();
                 try {
-                    uploadDoc.size = FileUtils.getFileSizeInMB(Paths.get(filePath));
+                    uploadDoc.size = FileUtils.getFileSize(Paths.get(filePath));
                 } catch (IOException ex) {
                     uploadDoc.size = "UNDEFINED";
                 }

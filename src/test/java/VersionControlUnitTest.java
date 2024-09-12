@@ -26,7 +26,7 @@ public class VersionControlUnitTest {
     }
 
     @Test
-    public void testRoot(){
+    public void testRoot() throws IOException {
         Assertions.assertEquals(rootFolder.name,"root");
         Document document = (Document) rootFolder.children.get(5);
         System.out.println(document.name);
@@ -35,6 +35,7 @@ public class VersionControlUnitTest {
         System.out.println(document.owner);
         System.out.println(document.group);
         System.out.println(document.permissions);
+        System.out.println(FileUtils.getFileSize(Paths.get("/srv/nfs/share/root/BGM_Versus_Fes_SAND_3Idol [1].wav/BGM_Versus_Fes_SAND_3Idol [1]12_09_2024_03_39_28.wav")));
     }
 
 //    @Test

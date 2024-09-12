@@ -9,5 +9,6 @@ public interface DatabaseServicePort {
     Directory createDirectory(Directory directory);
     boolean deleteDirectory(Directory directory);
 
+    String getLatestVersionName(int directoryId);
     void createGitVersion(int directoryId,String versionName);
 }
