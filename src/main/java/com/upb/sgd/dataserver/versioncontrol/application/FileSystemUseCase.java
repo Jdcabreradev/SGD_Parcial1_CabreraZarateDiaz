@@ -27,6 +27,7 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
         Folder rootFolder = new Folder();
         List<Directory> rootChildren = databaseService.findDirByParent(null);
         rootFolder.name = "root";
+
         for (Directory dir : rootChildren) {
             if (dir.dirType.isFolder()) {
                 Folder childFolder = createFolderRecursively(dir);
@@ -44,8 +45,9 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
         Folder folder = new Folder();
         folder.name = dir.name;
         List<Directory> children = databaseService.findDirByParent(dir.id);
+
         for (Directory childDir : children) {
-            if (dir.dirType.isFolder()) {
+            if (childDir.dirType.isFolder()) {  // Cambié dir.dirType por childDir.dirType
                 Folder childFolder = createFolderRecursively(childDir);
                 folder.AddDirectory(childFolder);
             } else {
@@ -56,7 +58,6 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
         }
         return folder;
     }
-
 
     @Override
     public Directory addDirectory(Directory directory, String path) {

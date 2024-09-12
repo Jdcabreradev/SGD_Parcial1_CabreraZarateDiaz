@@ -212,7 +212,9 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                 selectedFilePath.setText(selectedFile.getAbsolutePath());
                 Document uploadDoc = new Document();
                 uploadDoc.name = selectedFile.getName();
-                uploadDoc.path = selectedFilePath.getName();
+                uploadDoc.path = selectedFile.getName();
+                uploadDoc.permissions = "";
+                uploadDoc.contentType = selectedFile.getName().substring(selectedFile.getName().lastIndexOf('.'));
                 try {
                     uploadDoc.fileData = FileUtils.readFileToByteArray(Paths.get(selectedFile.getAbsolutePath()));
                 } catch (IOException ex) {

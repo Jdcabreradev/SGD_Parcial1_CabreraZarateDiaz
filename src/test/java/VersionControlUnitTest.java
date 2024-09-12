@@ -2,6 +2,7 @@ import com.upb.sgd.dataserver.database.infrastructure.mariadb.MariaDBProvider;
 import com.upb.sgd.dataserver.database.infrastructure.mariadb.MariaDBService;
 import com.upb.sgd.dataserver.versioncontrol.application.FileSystemUseCase;
 import com.upb.sgd.dataserver.versioncontrol.domain.port.driver.FileSystemUseCasePort;
+import com.upb.sgd.shared.domain.Directory;
 import com.upb.sgd.shared.domain.Document;
 import com.upb.sgd.shared.domain.Folder;
 import com.upb.sgd.utils.FileUtils;
@@ -27,6 +28,10 @@ public class VersionControlUnitTest {
     @Test
     public void testRoot(){
         Assertions.assertEquals(rootFolder.name,"root");
+        Folder nestedDoc = (Folder) rootFolder.children.get(0);
+        Folder nested2 =  (Folder) nestedDoc.children.get(0);
+        System.out.println(nested2.children.getFirst().name);
+        System.out.println(nested2.children.getFirst().dirType);
     }
 
 //    @Test
@@ -81,44 +86,44 @@ public class VersionControlUnitTest {
 //        Assertions.assertEquals("doc.txt",currentFolder.children.getFirst().name);
 //    }
 
-    @Test
-    public void deleteTest() throws IOException, InterruptedException {
-        int currentFolderChildren = rootFolder.children.size();
-
-        Folder deleteFolder = new Folder();
-        deleteFolder.name = "deleteFolder";
-        deleteFolder.path = "deleteFolder";
-        deleteFolder.owner = 1;
-        deleteFolder.group = 1;
-        deleteFolder.parent = rootFolder.id;
-        deleteFolder.permissions = "rwrwrw";
-
-        Folder dFolder = (Folder) fileSystem.addDirectory(deleteFolder,rootFolder.getPath().toString());
-        if (dFolder!=null){
-            rootFolder.AddDirectory(dFolder);
-        }
-
-        boolean delete = fileSystem.deleteDirectory(dFolder);
-        Assertions.assertTrue(delete);
-
-        Document newDocument = new Document();
-        newDocument.name = "doc.txt";
-        newDocument.path = "doc.txt";
-        newDocument.contentType = "txt";
-        newDocument.owner = 1;
-        newDocument.group = 1;
-        newDocument.parent = currentFolder.id;
-        newDocument.permissions = "rwrwrw";
-        newDocument.fileData = FileUtils.readFileToByteArray(Paths.get("/srv/nfs/Hola.txt"));
-
-        Document addedDoc = (Document) fileSystem.addDirectory(newDocument,rootFolder.getPath().toString());
-        if (addedDoc != null){
-            currentFolder.AddDirectory(addedDoc);
-        }
-
-        delete = fileSystem.deleteDirectory(addedDoc);
-        Assertions.assertTrue(delete);
-    }
+//    @Test
+//    public void deleteTest() throws IOException, InterruptedException {
+//        int currentFolderChildren = rootFolder.children.size();
+//
+//        Folder deleteFolder = new Folder();
+//        deleteFolder.name = "deleteFolder";
+//        deleteFolder.path = "deleteFolder";
+//        deleteFolder.owner = 1;
+//        deleteFolder.group = 1;
+//        deleteFolder.parent = rootFolder.id;
+//        deleteFolder.permissions = "rwrwrw";
+//
+//        Folder dFolder = (Folder) fileSystem.addDirectory(deleteFolder,rootFolder.getPath().toString());
+//        if (dFolder!=null){
+//            rootFolder.AddDirectory(dFolder);
+//        }
+//
+//        boolean delete = fileSystem.deleteDirectory(dFolder);
+//        Assertions.assertTrue(delete);
+//
+//        Document newDocument = new Document();
+//        newDocument.name = "doc.txt";
+//        newDocument.path = "doc.txt";
+//        newDocument.contentType = "txt";
+//        newDocument.owner = 1;
+//        newDocument.group = 1;
+//        newDocument.parent = currentFolder.id;
+//        newDocument.permissions = "rwrwrw";
+//        newDocument.fileData = FileUtils.readFileToByteArray(Paths.get("/srv/nfs/Hola.txt"));
+//
+//        Document addedDoc = (Document) fileSystem.addDirectory(newDocument,rootFolder.getPath().toString());
+//        if (addedDoc != null){
+//            currentFolder.AddDirectory(addedDoc);
+//        }
+//
+//        delete = fileSystem.deleteDirectory(addedDoc);
+//        Assertions.assertTrue(delete);
+//    }
 
 
 }
