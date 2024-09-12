@@ -8,10 +8,8 @@ import com.upb.sgd.shared.domain.Folder;
 import com.upb.sgd.utils.FileUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.rmi.RemoteException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -20,7 +18,7 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
     final DatabaseServicePort databaseService;
     final Path Workdir = Paths.get("/srv/nfs/share");
 
-    public FileSystemUseCase(DatabaseServicePort databaseService) throws RemoteException {
+    public FileSystemUseCase(DatabaseServicePort databaseService) {
         this.databaseService = databaseService;
     }
 
@@ -71,4 +69,32 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
            return null;
        }
     }
+
+    @Override
+    public boolean deleteDirectory(Directory directory) {
+        if (databaseService.deleteDirectory(directory)) {
+            try {
+                Path directoryPath = Workdir.resolve(directory.getPath());
+                Files.walkFileTree(directoryPath, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        Files.delete(file);
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        Files.delete(dir);
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+                return true;
+            } catch (IOException e) {
+                System.out.println("[FILESYSTEM] Error al eliminar el directorio " + directory.name + ": " + e.toString());
+                return false;
+            }
+        }
+        return false;
+    }
+
 }

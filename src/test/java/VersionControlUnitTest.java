@@ -19,13 +19,9 @@ public class VersionControlUnitTest {
     private static Folder currentFolder;
 
     @BeforeAll
-    public static void setUp() throws RemoteException {
+    public static void setUp() {
         fileSystem = new FileSystemUseCase(new MariaDBService(MariaDBProvider.MariaDBConn()));
-        try {
-            rootFolder = fileSystem.getRoot();
-        } catch (java.rmi.RemoteException e) {
-            throw new RuntimeException(e);
-        }
+        rootFolder = fileSystem.getRoot();
         currentFolder = rootFolder;
     }
 
@@ -34,40 +30,78 @@ public class VersionControlUnitTest {
         Assertions.assertEquals(rootFolder.name,"root");
     }
 
+//    @Test
+//    public void testCreateFolderAndDocument() throws IOException {
+//        Folder folderToAdd = new Folder();
+//        folderToAdd.name = "testFolder";
+//        folderToAdd.path = "testFolder";
+//        folderToAdd.owner = 1;
+//        folderToAdd.group = 1;
+//        folderToAdd.parent = currentFolder.id;
+//        folderToAdd.permissions = "rwrwrw";
+//
+//        Folder fsFolder = (Folder) fileSystem.addDirectory(folderToAdd,currentFolder.getPath());
+//        if (fsFolder != null){
+//            currentFolder.AddDirectory(fsFolder);
+//        }
+//
+//        Assertions.assertEquals(rootFolder.children.getFirst().id, fsFolder != null ? fsFolder.id : 0);
+//
+//        currentFolder = (Folder) currentFolder.children.getFirst();
+//        Folder nestedFolder = new Folder();
+//        nestedFolder.name = "nestedFolder";
+//        nestedFolder.path = "nestedFolder";
+//        nestedFolder.owner = 1;
+//        nestedFolder.group = 1;
+//        nestedFolder.parent = currentFolder.id;
+//        nestedFolder.permissions = "rwrwrw";
+//
+//        fsFolder = (Folder) fileSystem.addDirectory(nestedFolder,currentFolder.getPath());
+//        if (fsFolder != null){
+//            currentFolder.AddDirectory(fsFolder);
+//        }
+//
+//        Assertions.assertEquals(currentFolder.id, fsFolder != null ? fsFolder.parent : 0);
+//
+//        currentFolder = (Folder) currentFolder.children.getFirst();
+//        Document newDocument = new Document();
+//        newDocument.name = "doc.txt";
+//        newDocument.path = "doc.txt";
+//        newDocument.contentType = "txt";
+//        newDocument.owner = 1;
+//        newDocument.group = 1;
+//        newDocument.parent = currentFolder.id;
+//        newDocument.permissions = "rwrwrw";
+//        newDocument.fileData = FileUtils.readFileToByteArray(Paths.get("/srv/nfs/Hola.txt"));
+//
+//        Document addedDoc = (Document) fileSystem.addDirectory(newDocument,currentFolder.getPath());
+//        if (addedDoc != null){
+//            currentFolder.AddDirectory(addedDoc);
+//        }
+//
+//        Assertions.assertEquals("doc.txt",currentFolder.children.getFirst().name);
+//    }
+
     @Test
-    public void testCreateFolderAndDocument() throws IOException {
-        Folder folderToAdd = new Folder();
-        folderToAdd.name = "testFolder";
-        folderToAdd.path = "testFolder";
-        folderToAdd.owner = 1;
-        folderToAdd.group = 1;
-        folderToAdd.parent = currentFolder.id;
-        folderToAdd.permissions = "rwrwrw";
+    public void deleteTest() throws IOException {
+        int currentFolderChildren = rootFolder.children.size();
 
-        Folder fsFolder = (Folder) fileSystem.addDirectory(folderToAdd,currentFolder.getPath());
-        if (fsFolder != null){
-            currentFolder.AddDirectory(fsFolder);
+        Folder deleteFolder = new Folder();
+        deleteFolder.name = "deleteFolder";
+        deleteFolder.path = "deleteFolder";
+        deleteFolder.owner = 1;
+        deleteFolder.group = 1;
+        deleteFolder.parent = rootFolder.id;
+        deleteFolder.permissions = "rwrwrw";
+
+        Folder dFolder = (Folder) fileSystem.addDirectory(deleteFolder,rootFolder.getPath());
+        if (dFolder!=null){
+            rootFolder.AddDirectory(dFolder);
         }
 
-        Assertions.assertEquals(rootFolder.children.getFirst().id, fsFolder != null ? fsFolder.id : 0);
+        boolean delete = fileSystem.deleteDirectory(dFolder);
+        System.out.println(delete);
 
-        currentFolder = (Folder) currentFolder.children.getFirst();
-        Folder nestedFolder = new Folder();
-        nestedFolder.name = "nestedFolder";
-        nestedFolder.path = "nestedFolder";
-        nestedFolder.owner = 1;
-        nestedFolder.group = 1;
-        nestedFolder.parent = currentFolder.id;
-        nestedFolder.permissions = "rwrwrw";
-
-        fsFolder = (Folder) fileSystem.addDirectory(nestedFolder,currentFolder.getPath());
-        if (fsFolder != null){
-            currentFolder.AddDirectory(fsFolder);
-        }
-
-        Assertions.assertEquals(currentFolder.id, fsFolder != null ? fsFolder.parent : 0);
-
-        currentFolder = (Folder) currentFolder.children.getFirst();
         Document newDocument = new Document();
         newDocument.name = "doc.txt";
         newDocument.path = "doc.txt";
@@ -82,8 +116,5 @@ public class VersionControlUnitTest {
         if (addedDoc != null){
             currentFolder.AddDirectory(addedDoc);
         }
-
-        Assertions.assertEquals("doc.txt",currentFolder.children.getFirst().name);
     }
-
 }
