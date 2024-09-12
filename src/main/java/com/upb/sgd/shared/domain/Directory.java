@@ -7,23 +7,28 @@ import java.util.List;
 public abstract class Directory implements Serializable {
 
     // Identificación
-    int id;
-    String name;
-    int owner;
-    int parent;
+    public int id;
+    public String name;
+    public int owner;
+    public int parent;
 
     // Propiedades del archivo/directorio
-    String path;
-    DirType dirType;
-    String permissions;
-    String size;
-    String contentType;
+    public String path;
+    public DirType dirType;
+    public String permissions;
+    public String size;
+    public String contentType;
 
     // Metadatos temporales
-    Date createdAt;
-    Date updatedAt;
+    public Date createdAt;
+    public Date updatedAt;
 
     // Detalles adicionales
-    List<String> tags;
-    Directory parentDirectory;
+    public List<String> tags;
+    public Directory parentDirectory;
+
+    @Override
+    public String toString() {
+        return this.name; // Return the name of the document
+    }
 }
