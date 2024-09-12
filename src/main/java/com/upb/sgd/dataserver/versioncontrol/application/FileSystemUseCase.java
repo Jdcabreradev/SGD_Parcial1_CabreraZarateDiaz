@@ -12,12 +12,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class FileSystemUseCase extends UnicastRemoteObject implements FileSystemUseCasePort {
+public class FileSystemUseCase implements FileSystemUseCasePort {
     final DatabaseServicePort databaseService;
     final Path Workdir = Paths.get("/srv/nfs/share");
 
@@ -26,7 +25,7 @@ public class FileSystemUseCase extends UnicastRemoteObject implements FileSystem
     }
 
     @Override
-    public Folder getRoot() throws RemoteException {
+    public Folder getRoot() {
         Folder rootFolder = new Folder();
         List<Directory> rootChildren = databaseService.findDirByParent(null);
         rootFolder.name = "root";
@@ -49,7 +48,7 @@ public class FileSystemUseCase extends UnicastRemoteObject implements FileSystem
     }
 
     @Override
-    public Directory addDirectory(Directory directory, Path path) throws RemoteException {
+    public Directory addDirectory(Directory directory, Path path) {
         Directory dbDir = databaseService.createDirectory(directory);
         if (dbDir == null){return null;}
 

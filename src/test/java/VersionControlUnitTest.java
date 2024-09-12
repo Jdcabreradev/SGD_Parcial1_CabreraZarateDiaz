@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.rmi.RemoteException;
 
 public class VersionControlUnitTest {
     private static FileSystemUseCasePort fileSystem;
@@ -18,7 +19,7 @@ public class VersionControlUnitTest {
     private static Folder currentFolder;
 
     @BeforeAll
-    public static void setUp(){
+    public static void setUp() throws RemoteException {
         fileSystem = new FileSystemUseCase(new MariaDBService(MariaDBProvider.MariaDBConn()));
         try {
             rootFolder = fileSystem.getRoot();

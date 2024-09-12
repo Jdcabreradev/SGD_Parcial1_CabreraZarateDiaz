@@ -4,10 +4,8 @@ import com.upb.sgd.shared.domain.Directory;
 import com.upb.sgd.shared.domain.Folder;
 
 import java.nio.file.Path;
-import java.rmi.Remote;
-import java.rmi.RemoteException;
 
-public interface FileSystemUseCasePort extends Remote {
-    Folder getRoot() throws RemoteException;
-    Directory addDirectory(Directory directory, Path path) throws RemoteException;
+public interface FileSystemUseCasePort {
+    Folder getRoot();
+    Directory addDirectory(Directory directory, Path path);
 }
