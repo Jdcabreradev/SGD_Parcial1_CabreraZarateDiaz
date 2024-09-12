@@ -50,7 +50,7 @@ public class UserService{
     }
 
     public Boolean CreateUser(int groupPermId, String username, String password) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return usersRMI.CreateUser(groupPermId, username, password);
     }
 
     public Boolean UpdateUser(int id, List<Integer> groupPermId, String username, String password) throws RemoteException {
@@ -58,7 +58,7 @@ public class UserService{
     }
 
     public List<Group> GetGroups() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return usersRMI.GetGroups();
     }
 
     public Group GetGroup(int id) throws RemoteException {
@@ -66,7 +66,7 @@ public class UserService{
     }
 
     public Boolean CreateGroup(String name) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return usersRMI.CreateGroup(name);
     }
 
     public Boolean UpdateGroup(int id, String name) throws RemoteException {
