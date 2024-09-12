@@ -73,6 +73,7 @@ public class ClientProcess {
     public void Write(byte[] data) {
         if (connected && socket != null) {
             socket.Write(data);
+            System.out.println("Sendin data.");
         } else {
             System.out.println("Socket not connected.");
         }

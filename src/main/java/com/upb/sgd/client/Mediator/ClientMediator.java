@@ -5,6 +5,7 @@
 
 package com.upb.sgd.client.Mediator;
 
+import com.upb.sgd.client.GUI.FileSystemBrowserWindow;
 import com.upb.sgd.client.GUI.Interface.GUIWindow;
 import com.upb.sgd.client.GUI.LoginWindow;
 import com.upb.sgd.client.RMI.DataService;
@@ -21,13 +22,13 @@ public class ClientMediator {
     public DataService dataService;
     public User loggedUser;
     private GUIWindow currentWindow;
-    private ClientProcess clientProcess;
+    public ClientProcess clientProcess;
 
     public void Init(){
-        this.userService = new UserService("rmi://localhost:1802/appserver/user");
+        this.userService = new UserService("rmi://25.49.100.226:1802/appserver/user");
         this.userService.Init();
 
-        this.dataService = new DataService("rmi://localhost:1802/appserver/data");
+        this.dataService = new DataService("rmi://25.49.100.226:1802/appserver/data");
         this.dataService.Init();
 
         this.clientProcess = new ClientProcess(1803,this);
@@ -41,5 +42,11 @@ public class ClientMediator {
         this.currentWindow.Close();
         this.currentWindow = newWindow;
         this.currentWindow.Init();
+    }
+
+    public void UpdateViewMessage(String notitication){
+        if(this.currentWindow instanceof FileSystemBrowserWindow a){
+            a.UpdateNotification(notitication);
+        }
     }
 }

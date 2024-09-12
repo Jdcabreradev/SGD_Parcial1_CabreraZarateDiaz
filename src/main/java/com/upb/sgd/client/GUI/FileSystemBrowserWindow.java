@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
@@ -53,6 +54,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
     private JFrame viewFrame;
     private JTree folderTree;
     private JList<Document> documentList;
+    private JLabel notificationLabel;
 
     public FileSystemBrowserWindow(ClientMediator mediator) {
         super(mediator);
@@ -121,16 +123,16 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         JTextField leftSearchField = new JTextField();
         JButton leftSearchButton = new JButton("Search");
 
-        leftSearchButton.addActionListener(e->{
+        leftSearchButton.addActionListener(e -> {
             var result = this.mediator.dataService.SearchForDocuments(
-                leftSearchField.getText()
+                    leftSearchField.getText()
             );
 
             UpdateFolderTree(
-                result
+                    result
             );
             UpdateDocumentList(result);
-        } );
+        });
 
         leftBottomPanel.add(leftSearchField, BorderLayout.CENTER);
         leftBottomPanel.add(leftSearchButton, BorderLayout.EAST);
@@ -186,7 +188,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
 
         // Notifications
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JLabel notificationLabel = new JLabel("Notifications will be displayed here.");
+        notificationLabel = new JLabel("Notifications will be displayed here.");
         footerPanel.add(notificationLabel);
         viewFrame.add(footerPanel, BorderLayout.SOUTH);
         viewFrame.setVisible(true);
@@ -258,7 +260,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                 } catch (IOException ex) {
                     System.out.println("unable to find uploadFile path");
                 }
-                this.mediator.dataService.UploadFile(uploadDoc,this.mediator.dataService.currentFolder.getPath().toString());
+                this.mediator.dataService.UploadFile(uploadDoc, this.mediator.dataService.currentFolder.getPath().toString());
                 System.out.println("Uploading document: " + documentName + " | Permissions: " + permissions + " | Tags: " + tags + " | File: " + filePath);
                 uploadDialog.dispose();
             } else {
@@ -330,7 +332,11 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                 } catch (IOException ex) {
                     System.out.println("unable to find uploadFile path");
                 }
-                this.mediator.dataService.UploadFile(uploadDoc,this.mediator.dataService.currentFolder.getPath().toString());
+                this.mediator.dataService.UploadFile(uploadDoc, this.mediator.dataService.currentFolder.getPath().toString());
+                this.mediator.clientProcess.Write(
+                        ("User: " + this.mediator.loggedUser.username + " Uploaded a new file!").getBytes(StandardCharsets.UTF_8)
+                );
+
                 System.out.println("Updating document");
                 uploadDialog.dispose();
             } else {
@@ -359,8 +365,11 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         if (directory != null) {
             var tagString = "";
             for (String tag : directory.tags) {
-                if("".equals(tagString)) tagString += tag;
-                else tagString += ", " + tag;
+                if ("".equals(tagString)) {
+                    tagString += tag;
+                } else {
+                    tagString += ", " + tag;
+                }
             }
 
             JOptionPane.showMessageDialog(viewFrame,
@@ -403,7 +412,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
         if (folder != null) {
             for (Directory dir : folder.children) {
                 if (dir.dirType == DirType.FILE) {
-                    listModel.addElement((Document)dir);
+                    listModel.addElement((Document) dir);
                 }
             }
         }
@@ -426,17 +435,21 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
 
         JButton uploadButton = new JButton("Create");
         uploadButton.addActionListener(e -> {
-            
+
         });
 
         newFolderDialog.add(folderPanel);
         newFolderDialog.setVisible(true);
     }
 
-    private void RefreshFileSystemView(){
+    private void RefreshFileSystemView() {
         //TODO: Call remote update to rootFolder
         mediator.dataService.GetRoot();
         UpdateFolderTree(mediator.dataService.rootFolder);
         UpdateDocumentList(mediator.dataService.rootFolder);
+    }
+
+    public void UpdateNotification(String message) {
+        notificationLabel.setText(message);
     }
 }

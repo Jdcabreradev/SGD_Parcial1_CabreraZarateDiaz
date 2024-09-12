@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 /**
  *
@@ -65,8 +66,7 @@ public class ClientSocket {
                     byte[] buffer = new byte[messageLength];
                     inputStream.read(buffer, 0, messageLength);
 
-                    //TODO: SEND TO UI
-                    //router.Route(buffer);
+                    this.clientProcess.mediator.UpdateViewMessage(new String(buffer, StandardCharsets.UTF_8));
                 } else {
                     running = false;
                     System.out.println("Forcefully disconnected");
