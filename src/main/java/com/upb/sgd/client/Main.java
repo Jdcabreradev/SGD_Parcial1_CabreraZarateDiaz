@@ -1,6 +1,6 @@
 package com.upb.sgd.client;
 
-import com.upb.sgd.client.GUI.LoginWindow;
+import com.upb.sgd.client.Mediator.ClientMediator;
 
 /**
  *
@@ -8,7 +8,10 @@ import com.upb.sgd.client.GUI.LoginWindow;
  */
 public class Main {
     public static void main(String[] args) {
-        LoginWindow gui = new LoginWindow();
-        gui.showLogin();
+        //LoginWindow gui = new LoginWindow();
+        //gui.showLogin();
+
+        ClientMediator client = new ClientMediator();
+        client.Init();
     }
 }

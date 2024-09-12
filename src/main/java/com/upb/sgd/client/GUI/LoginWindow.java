@@ -3,8 +3,7 @@ package com.upb.sgd.client.GUI;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
+import java.rmi.RemoteException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -15,40 +14,35 @@ import javax.swing.JPasswordField;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
-import com.upb.sgd.shared.domain.User;
-import com.upb.sgd.shared.infrastructure.rmi.clientapp.ClientAppUsersRMI;
+import com.upb.sgd.client.GUI.Interface.AbstractGUIWindow;
+import com.upb.sgd.client.Mediator.ClientMediator;
 
 /**
  *
  * @author jj
  */
-public class LoginWindow {
+public class LoginWindow extends AbstractGUIWindow{
     private JFrame loginFrame;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JTabbedPane tabbedPane;
-    private User user;
+    //private User user;
+
+    public LoginWindow(ClientMediator mediator) {
+        super(mediator);
+    }
 
     private void handleLogin() {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
-
         try {
-            // Locating external registry
-            Registry externalRegistry = LocateRegistry.getRegistry("localhost", 1802);
-            ClientAppUsersRMI rmi = (ClientAppUsersRMI) externalRegistry.lookup("appserver/user");
-
-            // Authenticating user
-            user = rmi.Login(username, password);
-
-            if (user != null) {
+            if(this.mediator.userService.Login(username, password) != null){
                 showSuccessTab();
-            } else {
+            }else{
                 JOptionPane.showMessageDialog(loginFrame, "Login Failed", "Error", JOptionPane.ERROR_MESSAGE);
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (RemoteException e) {
+            System.err.println(e.getMessage());
             JOptionPane.showMessageDialog(loginFrame, "Something went wrong", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -102,5 +96,15 @@ public class LoginWindow {
         loginFrame.add(tabbedPane);
         loginFrame.revalidate();
         loginFrame.repaint();
+    }
+
+    @Override
+    public void Init() {
+        this.showLogin();
+    }
+
+    @Override
+    public void Close() {
+        this.loginFrame.dispose();
     }
 }
