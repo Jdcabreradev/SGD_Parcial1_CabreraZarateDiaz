@@ -8,6 +8,7 @@ package com.upb.sgd.client.Mediator;
 import com.upb.sgd.client.GUI.Interface.GUIWindow;
 import com.upb.sgd.client.GUI.LoginWindow;
 import com.upb.sgd.client.RMI.UserService;
+import com.upb.sgd.shared.domain.User;
 
 /**
  *
@@ -15,6 +16,7 @@ import com.upb.sgd.client.RMI.UserService;
  */
 public class ClientMediator {
     public UserService userService;
+    public User loggedUser;
     private GUIWindow currentWindow;
 
     public void Init(){

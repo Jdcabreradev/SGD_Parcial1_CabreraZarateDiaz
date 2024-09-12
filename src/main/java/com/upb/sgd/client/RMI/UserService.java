@@ -42,7 +42,7 @@ public class UserService{
     }
 
     public List<User> GetUsers() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return usersRMI.GetUsers();
     }
 
     public User Login(String username, String password) throws RemoteException {

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.rmi.RemoteException;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,17 +17,18 @@ import javax.swing.JTextField;
 
 import com.upb.sgd.client.GUI.Interface.AbstractGUIWindow;
 import com.upb.sgd.client.Mediator.ClientMediator;
+import com.upb.sgd.shared.domain.User;
 
 /**
  *
  * @author jj
  */
-public class LoginWindow extends AbstractGUIWindow{
+public class LoginWindow extends AbstractGUIWindow {
     private JFrame loginFrame;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JTabbedPane tabbedPane;
-    //private User user;
+    // private User user;
 
     public LoginWindow(ClientMediator mediator) {
         super(mediator);
@@ -36,12 +38,17 @@ public class LoginWindow extends AbstractGUIWindow{
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
         try {
-            if(this.mediator.userService.Login(username, password) != null){
-                showSuccessTab();
-            }else{
+            // Saving current user to the mediator
+            this.mediator.loggedUser = this.mediator.userService.Login(username, password);
+            if (this.mediator.loggedUser != null) {
+                if (this.mediator.loggedUser.isAdmin) {
+                    showAdminPanel();
+                } else
+                    showSuccessTab();
+            } else {
                 JOptionPane.showMessageDialog(loginFrame, "Login Failed", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (RemoteException e) {
+        } catch (RemoteException | NullPointerException e) {
             System.err.println(e.getMessage());
             JOptionPane.showMessageDialog(loginFrame, "Something went wrong", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -94,6 +101,30 @@ public class LoginWindow extends AbstractGUIWindow{
 
         loginFrame.getContentPane().removeAll();
         loginFrame.add(tabbedPane);
+        loginFrame.revalidate();
+        loginFrame.repaint();
+    }
+
+    private void showAdminPanel() {  // NOT WORKING YET!!!
+        JPanel adminPanel = new JPanel();
+        adminPanel.add(new JLabel("Admin Panel"), BorderLayout.NORTH);
+
+        // User list
+        String[] columnNames = { "ID", "Username", "Is Admin" };
+        Object[][] data;
+
+        try {
+            List<User> users = this.mediator.userService.GetUsers(); 
+
+            
+
+        } catch (RemoteException e) {
+            System.err.println(e.getMessage());
+            JOptionPane.showMessageDialog(loginFrame, "Error fetching users", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        loginFrame.getContentPane().removeAll();
+        loginFrame.add(adminPanel);
         loginFrame.revalidate();
         loginFrame.repaint();
     }
