@@ -4,6 +4,9 @@
  */
 package com.upb.sgd.client.RMI;
 
+import java.io.IOException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,7 +17,6 @@ import com.upb.sgd.shared.domain.DirType;
 import com.upb.sgd.shared.domain.Directory;
 import com.upb.sgd.shared.domain.Document;
 import com.upb.sgd.shared.domain.Folder;
-import com.upb.sgd.shared.domain.Permissions;
 import com.upb.sgd.shared.infrastructure.rmi.clientapp.ClientAppDirectoryRMI;
 
 /**
@@ -26,40 +28,28 @@ public class DataService {
     private final String url;
     private ClientAppDirectoryRMI dataRMI;
     public Folder rootFolder;
+    public Folder currentFolder;
 
     public DataService(String url) {
         this.url = url;
     }
 
     public boolean Init() {
-        /*try {
+        try {
             this.dataRMI = (ClientAppDirectoryRMI) Naming.lookup(this.url);
             return true;
         } catch (IOException | NotBoundException e) {
             System.out.println("Unable to bind user service: " + e.getMessage());
             return false;
-        }*/
-        return false;
+        }
     }
 
-    public Folder GetFolder(int id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public Folder QueryFolder(String args) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public List<Document> GitDocument(int id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean UpdateDirectoryPerms(int id, Permissions user, Permissions group, Permissions other) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean RestoreDirectory(int id, int version) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void GetRoot() {
+        try {
+            this.rootFolder = this.dataRMI.getRoot();
+        } catch (IOException e) {
+            System.out.println("Unable to retrieve remote root");
+        }
     }
 
     public Folder SearchForDocuments(String query) {
@@ -74,32 +64,33 @@ public class DataService {
             switch (dir) {
                 case Document doc -> {
                     boolean tmpAccept = false;
-                    
-                    if (doc.name != null && (doc.name.toLowerCase().contains(query.toLowerCase()) || 
-                    doc.name.toLowerCase().equals(query.toLowerCase()))) {
+
+                    if (doc.name != null && (doc.name.toLowerCase().contains(query.toLowerCase())
+                            || doc.name.toLowerCase().equals(query.toLowerCase()))) {
                         tmpAccept = true;
                     }
-                    
+
                     for (String tag : doc.tags) {
                         if (tag != null && tag.toLowerCase().contains(query.toLowerCase())) {
                             tmpAccept = true;
                         }
                     }
-                    
+
                     if (doc.createdAt != null && doc.createdAt.toString().contains(query)) {
                         tmpAccept = true;
                     }
-                    
+
                     if (doc.updatedAt != null && doc.updatedAt.toString().contains(query)) {
                         tmpAccept = true;
                     }
-                    
-                    if(tmpAccept){
+
+                    if (tmpAccept) {
                         result.add(doc);
                     }
-                    
+
                 }
-                case Folder folder1 -> SearchFolder(folder1, query, result);
+                case Folder folder1 ->
+                    SearchFolder(folder1, query, result);
                 default -> {
                 }
             }
