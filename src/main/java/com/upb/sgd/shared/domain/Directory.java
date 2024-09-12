@@ -47,4 +47,9 @@ public abstract class Directory implements Serializable {
         }
         pathSegments.add(directory.name);
     }
+
+        @Override
+    public String toString() {
+        return this.name;
+    }
 }

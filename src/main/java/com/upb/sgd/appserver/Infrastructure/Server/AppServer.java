@@ -19,6 +19,7 @@ import com.upb.sgd.shared.infrastructure.rmi.clientapp.ClientAppUsersRMI;
  * @author sebastian
  */
 public class AppServer {
+
     private final String ip;
     private final String port;
     private final String serviceName;
@@ -30,13 +31,13 @@ public class AppServer {
     public ServerProcess serverProcess;
     public AppDataService dataService;
 
-    String url = "jdbc:mariadb://localhost:3306/SGDUSERDB?useSSL=false&serverTimezone=UTC";
+    String url = "jdbc:mariadb://localhost:3306/SGDUSERDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
     String dbUser = "APPSERVERUSER";
     String dbPassword = "123";
 
     String dataServerRMIurl = "rmi://25.49.116.249:1099/dataserver";
-    
-    public AppServer(String ip, String port, String serviceName){
+
+    public AppServer(String ip, String port, String serviceName) {
         this.ip = ip;
         this.port = port;
         this.serviceName = serviceName;
@@ -47,22 +48,22 @@ public class AppServer {
             System.out.println("Appserver connected to database.");
         } catch (SQLException e) {
             System.out.println("Database connection error: " + e.getMessage());
-        } 
+        }
     }
 
-    public boolean Init(){
+    public boolean Init() {
         try {
             //RMI SetUp
             System.out.println("Initializing " + serviceName + " server.");
             System.setProperty("java.rmi.server.hostname", ip);
             LocateRegistry.createRegistry(Integer.parseInt(port));
-            
+
             //User endpoint setup
             System.out.println("Initializing user endpoint.");
             usersRMI = new UserRouterRMI(
-                new UserUseCase(
-                    new MariaDBProvider(connection)
-                )
+                    new UserUseCase(
+                            new MariaDBProvider(connection)
+                    )
             );
             Naming.rebind(uri + "/user", usersRMI);
             System.out.println("User service endpoint on: " + uri + "/user");
@@ -70,28 +71,27 @@ public class AppServer {
             //FileSystem endpoint
             System.out.println("Initializing data service.");
             this.dataService = new AppDataService(this.dataServerRMIurl);
-            if(this.dataService.Init()){
+            if (this.dataService.Init()) {
                 System.out.println("Connection to data server stablished");
                 Naming.rebind(uri + "/data", dataService);
                 System.out.println("Data service endpoint on: " + uri + "/data");
-
-
-                System.out.println(this.dataService.getRoot().name);
-            }else{
+            } else {
                 System.err.println("Unable to connect to data server");
             }
-            
+
+            System.out.println(this.dataService.getRoot().name);
+
             //Notification Socket Process
             System.out.println("Initializing notification socket module.");
             this.serverProcess = new ServerProcess(
-                new ServerSocket(1803, 100)
+                    new ServerSocket(1803, 100)
             );
             serverProcess.Init();
 
             System.out.println("Appserver ready.");
-            return true;    
+            return true;
         } catch (IOException e) {
-            System.err.println("Unable to start server: " + e.getMessage());
+            System.out.println("Unable to start server: " + e.getMessage());
             return false;
         }
     }
