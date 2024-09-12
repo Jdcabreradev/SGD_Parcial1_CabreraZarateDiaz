@@ -24,10 +24,10 @@ public class ClientMediator {
     private ClientProcess clientProcess;
 
     public void Init(){
-        this.userService = new UserService("rmi://localhost:1802/appserver/user");
+        this.userService = new UserService("rmi://25.49.100.226:1802/appserver/user");
         this.userService.Init();
 
-        this.dataService = new DataService("rmi://localhost:1802/appserver/data");
+        this.dataService = new DataService("rmi://25.49.100.226:1802/appserver/data");
         this.dataService.Init();
 
         this.clientProcess = new ClientProcess(1803,this);

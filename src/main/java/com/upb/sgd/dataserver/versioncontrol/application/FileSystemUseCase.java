@@ -139,6 +139,7 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
     public Document downloadFile(Document document,String path) {
         String lastVersion = databaseService.getLatestVersionName(document.id);
         try {
+            System.out.println(Paths.get(path).resolve(lastVersion));
             document.fileData = FileUtils.readFileToByteArray(Paths.get(path).resolve(lastVersion));
             return document;
         } catch (IOException e) {

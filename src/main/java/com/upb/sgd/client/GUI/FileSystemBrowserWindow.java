@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
@@ -155,6 +156,7 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
                         JMenuItem downloadItem = new JMenuItem("Download");
                         downloadItem.addActionListener(ev -> {
                             Document selectedDocument = documentList.getSelectedValue();
+                            System.out.println(selectedDocument.name);
                             DownloadDocument(selectedDocument);
                         });
                         filePopupMenu.add(downloadItem);
@@ -411,7 +413,27 @@ public class FileSystemBrowserWindow extends AbstractGUIWindow {
     }
 
     private void DownloadDocument(Document document) {
-        System.out.println(document.name);
+        System.out.println(document.getPath());
+// Crear un JFileChooser para seleccionar la ubicación de guardado
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Seleccionar ubicación para guardar el archivo");
+
+        // Configurar el JFileChooser para guardar archivos
+        int userSelection = fileChooser.showSaveDialog(null);
+
+        // Si el usuario selecciona una ubicación, guardar el archivo
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            Path filePath = Paths.get(fileChooser.getSelectedFile().getAbsolutePath());
+
+            try {
+                document = this.mediator.dataService.DownloadFile(document,document.getPath().toString());
+                FileUtils.writeByteArrayToFile(filePath, document.fileData);
+                System.out.println("Archivo guardado en: " + filePath.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Error al guardar el archivo.");
+            }
+        }
     }
 
     private void CreateNewFolder() {
