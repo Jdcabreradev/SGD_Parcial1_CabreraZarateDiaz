@@ -64,6 +64,7 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
     }
 
     private void copyDirectoryPropertiesToFolder(Directory dir, Folder folder) {
+        folder.id = dir.id;
         folder.name = dir.name;
         folder.owner = dir.owner;
         folder.permissions = dir.permissions;
@@ -74,6 +75,7 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
     }
 
     private void copyDirectoryPropertiesToDocument(Directory dir, Document document) {
+        document.id = dir.id;
         document.name = dir.name;
         document.owner = dir.owner;
         document.permissions = dir.permissions;
@@ -137,10 +139,12 @@ public class FileSystemUseCase implements FileSystemUseCasePort {
 
     @Override
     public Document downloadFile(Document document,String path) {
+        System.out.println(document.id);
         String lastVersion = databaseService.getLatestVersionName(document.id);
         try {
-            System.out.println(Paths.get(path).resolve(lastVersion));
-            document.fileData = FileUtils.readFileToByteArray(Paths.get(path).resolve(lastVersion));
+            System.out.println(lastVersion);
+            System.out.println(Paths.get(path,"/").resolve(lastVersion));
+            document.fileData = FileUtils.readFileToByteArray(Workdir.resolve(Paths.get(path,"/").resolve(lastVersion)));
             return document;
         } catch (IOException e) {
             System.out.println("[FILESYSTEM] Error al descargar el archivo " + document.name + ": " + e.toString());
